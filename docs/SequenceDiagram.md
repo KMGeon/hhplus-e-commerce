@@ -174,11 +174,12 @@ sequenceDiagram
 ```
 
 ### 8. 인기 상품 조회
+
 ```mermaid
 sequenceDiagram
     actor Users
     participant HotProduct
     
     Users->>HotProduct: 상위 판매 상품 조회 요청
--->>Users: 상위 상품 목록 반환
+    HotProduct-->>Users: 상위 상품 목록 반환
 ```
