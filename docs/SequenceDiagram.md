@@ -180,6 +180,5 @@ sequenceDiagram
     participant HotProduct
     
     Users->>HotProduct: 상위 판매 상품 조회 요청
-        Note right of DailyOrderStats: 상위 상품 목록 조회
 -->>Users: 상위 상품 목록 반환
 ```
