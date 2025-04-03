@@ -31,6 +31,7 @@ sequenceDiagram
 - 검증
   - 사용자의 userId를 검증합니다.
   - 충전 포인트 음수, 0을 검증합니다.
+  - 100만원 이상으로 충전하면 실패합니다.
 
 ```mermaid
 sequenceDiagram
@@ -47,8 +48,10 @@ sequenceDiagram
         else 사용자가 존재하는 경우
             Usr->>Usr: 포인트 충전 검증
             
-            alt 충전 포인트 음수 또는 0보다 작으면 실패
-                Usr-->>Client: 충전 Fail Response
+            alt 충전 포인트가 음수 또는 0인 경우
+                Usr-->>Client: 충전 Fail Response (유효하지 않은 금액)
+            else 충전 포인트가 100만원 이상인 경우
+                Usr-->>Client: 충전 Fail Response (한도 초과)
             else 충전 포인트가 정상인 경우
                 Usr->>Usr: 포인트 충전 처리
                 Usr-->>Client: 충전 Success Response
