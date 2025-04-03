@@ -2,6 +2,7 @@ plugins {
 	java
 	id("org.springframework.boot") version "3.4.1"
 	id("io.spring.dependency-management") version "1.1.7"
+	id("org.asciidoctor.jvm.convert") version "3.3.2"
 }
 
 fun getGitHash(): String {
@@ -19,6 +20,8 @@ java {
 	}
 }
 
+val snippetsDir by extra { file("build/generated-snippets")}
+val asciidoctorExt: Configuration by configurations.creating
 repositories {
 	mavenCentral()
 }
@@ -35,8 +38,19 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 	implementation("org.springframework.boot:spring-boot-starter-web")
 
+	//validation
+	implementation("org.springframework.boot:spring-boot-starter-validation")
+
+	//lombok
+	compileOnly("org.projectlombok:lombok")
+	annotationProcessor("org.projectlombok:lombok")
+
+
     // DB
 	runtimeOnly("com.mysql:mysql-connector-j")
+
+	asciidoctorExt("org.springframework.restdocs:spring-restdocs-asciidoctor")
+	testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -49,4 +63,23 @@ dependencies {
 tasks.withType<Test> {
 	useJUnitPlatform()
 	systemProperty("user.timezone", "UTC")
+}
+
+
+tasks {
+	asciidoctor {
+		dependsOn(test)
+		configurations("asciidoctorExt")
+		sources {
+			include("**/index.adoc")
+		}
+		baseDirFollowsSourceFile()
+		inputs.dir(snippetsDir)
+	}
+	bootJar {
+		dependsOn(asciidoctor)
+		from("build/docs/asciidoc") {
+			into("static/docs")
+		}
+	}
 }
