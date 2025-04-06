@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.controller.order;
+package kr.hhplus.be.server.interfaces.order;
 
 import kr.hhplus.be.server.config.AbstractRestDocsTests;
 import org.junit.jupiter.api.DisplayName;
