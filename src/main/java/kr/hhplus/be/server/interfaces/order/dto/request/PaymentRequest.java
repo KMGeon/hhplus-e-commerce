@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.controller.order.dto.request;
+package kr.hhplus.be.server.interfaces.order.dto.request;
 
 
 import jakarta.validation.constraints.NotBlank;

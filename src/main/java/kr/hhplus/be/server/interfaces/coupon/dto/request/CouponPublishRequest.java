@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.controller.coupon.dto.request;
+package kr.hhplus.be.server.interfaces.coupon.dto.request;
 
 
 import jakarta.validation.constraints.NotNull;

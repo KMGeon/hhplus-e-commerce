@@ -1,7 +1,7 @@
-package kr.hhplus.be.server.controller.product;
+package kr.hhplus.be.server.interfaces.product;
 
-import kr.hhplus.be.server.config.common.ApiResponse;
-import kr.hhplus.be.server.controller.product.response.ProductResponse;
+import kr.hhplus.be.server.interfaces.common.ApiResponse;
+import kr.hhplus.be.server.interfaces.product.response.ProductResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.config.common;
+package kr.hhplus.be.server.interfaces.common;
 
 import lombok.*;
 
