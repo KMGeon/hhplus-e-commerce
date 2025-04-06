@@ -1,9 +1,7 @@
-package kr.hhplus.be.server.controller;
+package kr.hhplus.be.server.interfaces.common;
 
 
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
-import kr.hhplus.be.server.config.common.ApiResponse;
-import kr.hhplus.be.server.config.common.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;

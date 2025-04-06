@@ -1,10 +1,10 @@
-package kr.hhplus.be.server.controller.coupon;
+package kr.hhplus.be.server.interfaces.coupon;
 
 import jakarta.validation.Valid;
-import kr.hhplus.be.server.config.common.ApiResponse;
-import kr.hhplus.be.server.controller.coupon.dto.request.CouponPublishRequest;
-import kr.hhplus.be.server.controller.coupon.dto.response.CouponResponse;
-import kr.hhplus.be.server.controller.coupon.dto.response.UserCouponResponse;
+import kr.hhplus.be.server.interfaces.common.ApiResponse;
+import kr.hhplus.be.server.interfaces.coupon.dto.request.CouponPublishRequest;
+import kr.hhplus.be.server.interfaces.coupon.dto.response.CouponResponse;
+import kr.hhplus.be.server.interfaces.coupon.dto.response.UserCouponResponse;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
