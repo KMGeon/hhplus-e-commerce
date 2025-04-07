@@ -74,7 +74,7 @@ public class UserControllerTest extends AbstractRestDocsTests {
             // given
             String requestBody = """
                     {
-                        "userId": "1234",
+                        "userId": "1",
                         "amount": 5000
                     }
                     """;

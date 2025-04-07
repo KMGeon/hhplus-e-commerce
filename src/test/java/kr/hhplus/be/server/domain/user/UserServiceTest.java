@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.user;
 
 import kr.hhplus.be.server.application.user.UserChargeCommand;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ class UserServiceTest {
     private UserRepository userRepository;
 
     private static final Long EXIST_USER = 1L;
+    private static final Long NO_SIGNUP_USER = 100L;
 
     @Nested
     class 충전 {
@@ -47,6 +49,18 @@ class UserServiceTest {
             // then
             assertNotNull(charge);
             assertEquals(2000L, charge.getPoint().getAmount());
+        }
+
+        @Test
+        public void 없는_사용자_포인트_충전() throws Exception{
+            // given
+            UserChargeCommand command = new UserChargeCommand(NO_SIGNUP_USER, 1000L);
+
+            // when
+            // then
+            Assertions.assertThatThrownBy(() -> userService.charge(command))
+                            .isInstanceOf(RuntimeException.class)
+                    .hasMessageContaining("해당 유저가 존재하지 않습니다.");
         }
 
     }
