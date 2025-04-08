@@ -33,7 +33,6 @@ public class UserEntity {
         this.point = this.point.add(amount);
         return this;
     }
-
 }
 
 

@@ -52,9 +52,6 @@ public class Point {
         return new Point(this.amount - amount);
     }
 
-    /**
-     * 최대 한도 초과 여부 검증
-     */
     private void validateNotExceedLimit(long amount) {
         if (amount > MAX_LIMIT_POINT) {
             throw new IllegalArgumentException(
@@ -63,16 +60,10 @@ public class Point {
         }
     }
 
-    /**
-     * 포인트 잔액 충분 여부 검증
-     */
     private void validateSufficientBalance(long amount) {
         if (this.amount < amount) throw new IllegalArgumentException("차감할 포인트가 보유 포인트보다 많습니다");
     }
 
-    /**
-     * 음수가 아닌지 검증
-     */
     private static void validateNonNegative(long amount, String message) {
         if (amount < ZERO) throw new IllegalArgumentException(message);
     }
