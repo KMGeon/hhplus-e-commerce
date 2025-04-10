@@ -41,7 +41,7 @@ public class Point {
         return new Point(newAmount);
     }
 
-    public Point subtract(long amount) {
+    public Point decreasePoint(long amount) {
         if (amount == ZERO) {
             return this;
         }

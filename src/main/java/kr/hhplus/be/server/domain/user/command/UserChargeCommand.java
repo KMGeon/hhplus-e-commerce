@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.application.user;
+package kr.hhplus.be.server.domain.user.command;
 
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.domain.user;
 
-import kr.hhplus.be.server.application.user.UserChargeCommand;
+import kr.hhplus.be.server.domain.user.command.UserChargeCommand;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static kr.hhplus.be.server.domain.user.UserEntity.initializeUserEntity;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -33,35 +32,40 @@ class UserServiceTest {
     class 충전 {
 
         @Test
-        public void 포인트_충전이_성공적으로_수행된다() throws Exception {
+        public void 포인트_충전이_성공적으로_수행된다() {
             // given
-            UserEntity user1 = initializeUserEntity(1L, 1000L);
-            UserEntity updatedUser = initializeUserEntity(1L, 2000L);
+            long initialAmount = 0L;
+            long chargeAmount = 1000L;
+            long expectedAmount = initialAmount + chargeAmount;
 
-            when(userRepository.findById(1L)).thenReturn(Optional.of(user1));
-            when(userRepository.update(any(UserEntity.class))).thenReturn(updatedUser);
+            UserEntity initialUser = UserEntity.createNewUser();
+            UserChargeCommand command = new UserChargeCommand(EXIST_USER, chargeAmount);
 
-            UserChargeCommand command = new UserChargeCommand(1L, 1000L);
+            when(userRepository.findById(any())).thenReturn(Optional.of(initialUser));
+            when(userRepository.update(any(UserEntity.class))).thenReturn(initialUser);
 
             // when
-            UserEntity charge = userService.charge(command);
+            UserEntity user = userService.charge(command);
 
             // then
-            assertNotNull(charge);
-            assertEquals(2000L, charge.getPoint().getAmount());
+            assertNotNull(user);
+            long point = user.getPoint();
+            assertEquals(point, expectedAmount);
         }
 
         @Test
-        public void 없는_사용자_포인트_충전() throws Exception{
+        public void 없는_사용자_포인트_충전() throws Exception {
             // given
             UserChargeCommand command = new UserChargeCommand(NO_SIGNUP_USER, 1000L);
 
             // when
             // then
             Assertions.assertThatThrownBy(() -> userService.charge(command))
-                            .isInstanceOf(RuntimeException.class)
+                    .isInstanceOf(RuntimeException.class)
                     .hasMessageContaining("해당 유저가 존재하지 않습니다.");
         }
-
     }
 }
+
+// 크리테리아 facade
+// command

@@ -1,11 +1,18 @@
 package kr.hhplus.be.server.interfaces.user;
 
 import kr.hhplus.be.server.config.AbstractRestDocsTests;
+import kr.hhplus.be.server.domain.user.UserEntity;
+import kr.hhplus.be.server.domain.user.UserService;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.get;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
@@ -17,6 +24,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class UserControllerTest extends AbstractRestDocsTests {
 
     private static final String USER_ID = "1";
+    @MockitoBean
+    private UserService userService;
 
     @Nested
     @DisplayName("유저 포인트 조회")
@@ -79,6 +88,9 @@ public class UserControllerTest extends AbstractRestDocsTests {
                     }
                     """;
 
+
+            when(userService.charge(any()))
+                    .thenReturn(Instancio.create(UserEntity.class));
             // when
             // then
             mockMvc.perform(post("/api/v1/user/point")

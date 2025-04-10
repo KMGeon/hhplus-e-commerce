@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.interfaces.user;
 
 import jakarta.validation.Valid;
-import kr.hhplus.be.server.application.user.UserChargeCommand;
+import kr.hhplus.be.server.domain.user.command.UserChargeCommand;
 import kr.hhplus.be.server.domain.user.UserService;
 import kr.hhplus.be.server.interfaces.common.ApiResponse;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +26,7 @@ public class UserController {
     public ApiResponse<UserResponseDTO.UserPointResponse> getUserPoint(
             @RequestParam(value = "userId") String userId
     ) {
-        return ApiResponse.success(null);
+        return ApiResponse.success(new UserResponseDTO.UserPointResponse(1L));
     }
 
     /**
