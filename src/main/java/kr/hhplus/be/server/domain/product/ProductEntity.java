@@ -1,55 +1,94 @@
 package kr.hhplus.be.server.domain.product;
 
-import kr.hhplus.be.server.domain.stock.StockEntity;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 
 @Getter
 @ToString
+@Entity(name = "product")
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ProductEntity {
-    private Long id;
-    private String skuId;
-    private char category;
-    private String productName;
-    private long price;
-    private StockEntity stock;
 
-    public ProductEntity(Long id, String skuId, char category, String productName, long price) {
-        this.id = id;
+    private static final int MIN_PRODUCT_NAME_LENGTH = 2;
+    private static final long MIN_PRICE = 0L;
+    private static final long MAX_PRICE = 100_000_000L;
+
+    @Id
+    @Column(name = "product_id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(nullable = false)
+    private String skuId;
+
+    @Column(nullable = false)
+    private String productName;
+
+    @Enumerated(EnumType.STRING)
+    private CategoryEnum category;
+
+    private Long price;
+
+    public String getCategory() {
+        return this.category.getCategoryCode();
+    }
+
+    public ProductEntity updateProductName(String productName) {
+        this.productName = productName;
+        return this;
+    }
+
+    public ProductEntity updateSkuId(String skuId) {
+        this.skuId = skuId;
+        return this;
+    }
+
+    public ProductEntity updateProductInfo(String productName, String skuId, CategoryEnum category, Long price) {
+        validateCategory(category);
+
+        this.productName = productName;
         this.skuId = skuId;
         this.category = category;
-        this.productName = productName;
         this.price = price;
+
+        return this;
     }
 
-    public void setStock(StockEntity stock) {
-        if (stock == null) {
-            throw new IllegalArgumentException("재고 정보는 null일 수 없습니다.");
-        }
-        if (!this.skuId.equals(stock.getSkuId())) {
-            throw new IllegalArgumentException("제품과 재고의 SKU ID가 일치하지 않습니다.");
-        }
-        this.stock = stock;
+    public ProductEntity updateCategory(CategoryEnum category) {
+        validateCategory(category);
+        this.category = category;
+        return this;
     }
 
-    public int getQuantity() {
-        return stock != null ? stock.getQuantity() : 0;
+    public String getCategoryCode() {
+        return this.category.getCategoryCode();
     }
 
-    public boolean decreaseStock(int amount) {
-        if (stock == null) {
-            return false;
-        }
-        return stock.decreaseStock(amount);
+    public String getCategoryName() {
+        return this.category.getDescription();
     }
 
-    public void increaseStock(int amount) {
-        if (stock == null) {
-            throw new IllegalStateException("재고 정보가 설정되지 않았습니다.");
+    public ProductEntity updatePrice(Long price) {
+        this.price = price;
+        return this;
+    }
+
+    public ProductEntity adjustPrice(long amount) {
+        long newPrice = this.price + amount;
+        this.price = newPrice;
+        return this;
+    }
+
+    private void validateCategory(CategoryEnum category) {
+
+        if (category == null) {
+            throw new IllegalArgumentException("카테고리는 필수입니다");
+        } else {
+            CategoryEnum.getCategoryCode(category);
         }
-        stock.increaseStock(amount);
+
+
     }
 }

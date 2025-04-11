@@ -1,5 +1,9 @@
 package kr.hhplus.be.server.interfaces.product;
 
+import kr.hhplus.be.server.application.product.ProductFacadeService;
+import kr.hhplus.be.server.domain.product.CategoryEnum;
+import kr.hhplus.be.server.domain.product.ProductEntity;
+import kr.hhplus.be.server.domain.product.dto.ProductInfo;
 import kr.hhplus.be.server.interfaces.common.ApiResponse;
 import kr.hhplus.be.server.interfaces.product.response.ProductResponse;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,9 +17,17 @@ import java.util.List;
 @RequestMapping("/api/v1")
 public class ProductController {
 
+    private final ProductFacadeService productFacadeService;
+
+    public ProductController(ProductFacadeService productFacadeService) {
+        this.productFacadeService = productFacadeService;
+    }
+
     @GetMapping("/product")
-    public ApiResponse<List<ProductResponse>> getProducts(@RequestParam(value = "category",required = false) String category) {
-        return ApiResponse.success(mockPorudctList(category));
+    public ApiResponse<List<ProductInfo.ProductInfoResponse>> getProducts(
+            @RequestParam(value = "category", required = false) String category
+    ) {
+        return ApiResponse.success(productFacadeService.getProducts(category));
     }
 
     @GetMapping("/hot-product")

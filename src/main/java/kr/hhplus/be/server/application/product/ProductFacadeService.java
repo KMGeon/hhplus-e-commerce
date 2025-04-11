@@ -1,8 +1,7 @@
 package kr.hhplus.be.server.application.product;
 
-import kr.hhplus.be.server.application.product.strategy.impl.ProductFetchStrategyFactory;
-import kr.hhplus.be.server.domain.product.ProductEntity;
-import kr.hhplus.be.server.domain.product.ProductService;
+import kr.hhplus.be.server.application.product.strategy.ProductFetchStrategyFactory;
+import kr.hhplus.be.server.domain.product.dto.ProductInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,15 +11,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductFacadeService {
     private final ProductFetchStrategyFactory strategyFactory;
-    private final ProductService productService;
 
-
-    public ProductEntity getProductById(Long id) {
-        return productService.getProduct(id);
-    }
-
-    public List<ProductEntity> getProducts(Character category) {
+    public List<ProductInfo.ProductInfoResponse> getProducts(String category) {
         return strategyFactory.getStrategy(category)
                 .fetch();
     }
 }
+
