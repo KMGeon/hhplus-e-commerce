@@ -1,42 +1,58 @@
 package kr.hhplus.be.server.interfaces.order;
 
+import kr.hhplus.be.server.application.order.OrderFacadeService;
 import kr.hhplus.be.server.config.AbstractRestDocsTests;
+import kr.hhplus.be.server.domain.order.OrderInfo;
+import org.instancio.Instancio;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.post;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.snippet.Attributes.key;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+@ExtendWith(MockitoExtension.class)
 class OrderControllerTest extends AbstractRestDocsTests {
+
+    @MockitoBean
+    private OrderFacadeService orderFacadeService;
 
     @Test
     @DisplayName("주문 생성 API - 성공")
     void createOrder_Success() throws Exception {
         // given
         String requestBody = """
+        {
+            "userId": 1,
+            "products": [
                 {
-                    "userId": 1,
-                    "couponId": null,
-                    "products": [
-                        {
-                            "productId": 1,
-                            "quantity": 2
-                        },
-                        {
-                            "productId": 2,
-                            "quantity": 1
-                        }
-                    ]
+                    "productId": 1,
+                    "ea": 2,
+                    "price": 1000
+                },
+                {
+                    "productId": 2,
+                    "ea": 1,
+                    "price": 4000
                 }
-                """;
+            ]
+        }
+        """;
 
-        // when
-        // then
+        OrderInfo orderInfo = Instancio.create(OrderInfo.class);
+        when(orderFacadeService.createOrder(any())).thenReturn(orderInfo);
+
+        // when & then
         mockMvc.perform(post("/api/v1/order")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -49,18 +65,18 @@ class OrderControllerTest extends AbstractRestDocsTests {
                                 fieldWithPath("userId").type(JsonFieldType.NUMBER)
                                         .description("사용자 ID")
                                         .attributes(key("constraints").value("필수 값")),
-                                fieldWithPath("couponId").type(JsonFieldType.NULL)
-                                        .description("쿠폰 ID")
-                                        .optional(),
                                 fieldWithPath("products").type(JsonFieldType.ARRAY)
                                         .description("주문 상품 목록")
                                         .attributes(key("constraints").value("최소 1개 이상")),
                                 fieldWithPath("products[].productId").type(JsonFieldType.NUMBER)
                                         .description("상품 ID")
                                         .attributes(key("constraints").value("필수 값")),
-                                fieldWithPath("products[].quantity").type(JsonFieldType.NUMBER)
+                                fieldWithPath("products[].ea").type(JsonFieldType.NUMBER)
                                         .description("주문 수량")
-                                        .attributes(key("constraints").value("1개 이상"))
+                                        .attributes(key("constraints").value("1개 이상")),
+                                fieldWithPath("products[].price").type(JsonFieldType.NUMBER)
+                                        .description("상품 가격")
+                                        .attributes(key("constraints").value("양수"))
                         ),
                         responseFields(COMMON_RESPONSE_FIELDS)
                 ));
