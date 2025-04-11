@@ -1,10 +1,13 @@
 package kr.hhplus.be.server.domain.product;
 
+import kr.hhplus.be.server.domain.product.dto.ProductInfo;
+
+import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 public interface ProductRepository {
-    Optional<ProductEntity> findById(Long id);
+    List<ProductInfo.ProductInfoResponse> findProductWithStockByCategoryCode(String categoryCode);
+    List<ProductInfo.ProductInfoResponse> findProductWithStock();
     List<ProductEntity> findAll();
-    List<ProductEntity> findAllByCategory(char category);
+    List<ProductEntity> findAllByIdIn(List<Long> productIds);
 }
