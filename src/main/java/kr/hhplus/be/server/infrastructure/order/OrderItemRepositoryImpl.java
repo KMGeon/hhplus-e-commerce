@@ -12,21 +12,23 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class OrderItemRepositoryImpl implements OrderCoreRepository {
 
-    private final OrderJpaFakeRepository userJpaFakeRepository;
-    private final OrderItemJpaFakeRepository orderItemJpaFakeRepository;
+    private final OrderJpaRepository orderJpaRepository;
+    private final OrderItemJpaRepository orderItemJpaRepository;
 
     @Override
     public OrderEntity save(OrderEntity order) {
-        return userJpaFakeRepository.save(order);
-    }
-
-    @Override
-    public OrderItemEntity save(OrderItemEntity entity) {
-        return orderItemJpaFakeRepository.save(entity);
+        return orderJpaRepository.save(order);
     }
 
     @Override
     public Optional<OrderEntity> findById(Long id) {
-        return orderItemJpaFakeRepository.findById(id);
+        return orderJpaRepository.findById(id);
     }
+
+
+    @Override
+    public OrderItemEntity save(OrderItemEntity entity) {
+        return orderItemJpaRepository.save(entity);
+    }
+
 }

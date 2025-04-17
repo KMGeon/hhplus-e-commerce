@@ -3,9 +3,7 @@ package kr.hhplus.be.server.interfaces.order;
 import jakarta.validation.Valid;
 import kr.hhplus.be.server.application.order.OrderCriteria;
 import kr.hhplus.be.server.application.order.OrderFacadeService;
-import kr.hhplus.be.server.application.order.OrderResult;
-import kr.hhplus.be.server.domain.order.OrderInfo;
-import kr.hhplus.be.server.interfaces.common.ApiResponse;
+import kr.hhplus.be.server.support.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,12 +17,14 @@ public class OrderController {
 
     private final OrderFacadeService orderFacadeService;
 
+    /**
+     * 주문 생성
+     */
     @PostMapping("/order")
     public ApiResponse<Integer> createOrder(
             @Valid @RequestBody OrderRequestDTO.CreateOrderRequest request
     ) {
         OrderCriteria.Order criteria = request.toCriteria();
-        OrderInfo order = orderFacadeService.createOrder(criteria);
-        return ApiResponse.maskToInteger(OrderResult.OrderCreate.from(order));
+        return ApiResponse.success(orderFacadeService.createOrder(criteria));
     }
 }

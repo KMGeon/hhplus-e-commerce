@@ -1,44 +1,65 @@
 package kr.hhplus.be.server.domain.order;
 
+import kr.hhplus.be.server.domain.product.ProductEntity;
+import kr.hhplus.be.server.domain.product.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
-    private final OrderCoreRepository orderCodeRepository;
+    private final OrderCoreRepository orderCoreRepository;
+    private final ProductRepository productRepository;
+
 
     @Transactional
-    public OrderInfo createOrder(OrderCommand.Order command, LocalDateTime now) {
-        OrderEntity newOrder = OrderEntity.createOrder(
-                command.userId(),
-                command.calculateTotalPrice(),
-                now,
-                command.calculateTotalQuantity()
-        );
-        orderCodeRepository.save(newOrder);
+    public long createOrder(OrderCommand.Order requestCommand){
+        OrderEntity order = OrderEntity.createOrder(requestCommand.userId(), LocalDateTime.now());
+        order.orderStatusConfirm();
 
-        for (OrderCommand.Item item : command.items()) {
-            OrderItemEntity orderItem = OrderItemEntity.createOrderItem(
-                    item.productId(),
-                    item.ea(),
-                    item.price()
-            );
-            orderItem.setOrder(newOrder);
-            orderCodeRepository.save(orderItem);
-        }
+        List<String> skuIds = requestCommand.items().stream()
+                .map(OrderCommand.Item::skuId)
+                .toList();
 
-        return OrderInfo.from(newOrder);
+        Map<String, ProductEntity> productMap = productRepository.findAllBySkuIdIn(skuIds)
+                .stream()
+                .collect(Collectors.toMap(
+                        ProductEntity::getSkuId,
+                        product -> product
+                ));
+
+        List<OrderItemEntity> orderItems = requestCommand.items().stream()
+                .map(item -> {
+                    ProductEntity product = productMap.get(item.skuId());
+                    return OrderItemEntity.createOrderItem(product, item.ea());
+                })
+                .toList();
+
+        order.addOrderItems(orderItems);
+        OrderEntity createOrder = orderCoreRepository.save(order);
+        return createOrder.getId();
     }
 
-    public boolean isValidOrder(long orderId){
-        return orderCodeRepository.findById(orderId)
-                .orElseThrow(()-> new RuntimeException("주문이 존재하지 않습니다."))
-                .isExpired();
+    public OrderInfo.OrderPaymentInfo isAvailableOrder(long orderId) {
+        OrderEntity getOrder = orderCoreRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("주문이 존재하지 않습니다."));
+
+        getOrder.isAvailablePaymentState();
+
+        return OrderInfo.OrderPaymentInfo.from(getOrder);
     }
 
+    public void setDiscountAmount(Long orderId, BigDecimal discountAmount) {
+        orderCoreRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("주문이 존재하지 않습니다."))
+                .setDiscountAmount(discountAmount);
+    }
 }
