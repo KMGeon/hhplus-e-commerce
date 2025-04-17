@@ -1,32 +1,54 @@
 package kr.hhplus.be.server.application.payment;
 
+import kr.hhplus.be.server.domain.order.OrderInfo;
 import kr.hhplus.be.server.domain.order.OrderService;
-import kr.hhplus.be.server.domain.order.PaymentCommand;
-import kr.hhplus.be.server.domain.product.ProductService;
+import kr.hhplus.be.server.domain.payment.PaymentService;
 import kr.hhplus.be.server.domain.user.UserService;
+import kr.hhplus.be.server.domain.user.userCoupon.UserCouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentFacadeService {
 
-    private final ProductService productService;
-    private final OrderService orderService;
     private final UserService userService;
+    private final UserCouponService userCouponService;
+    private final OrderService orderService;
+    private final PaymentService paymentService;
 
+    @Transactional
+    public void payment(PaymentCriteria.Pay criteria) {
+        OrderInfo.OrderPaymentInfo orderInfo = orderService.isAvailableOrder(criteria.orderId());
 
-    public String payment(PaymentCommand command) {
-        // 유저 체크하기
-        userService.isValidUser(command.userId());
+        Long userId = userService.getUserId(criteria.userId());
 
-        // 주문 id, exprire 검증
-        orderService.isValidOrder(command.orderId());
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (criteria.userCouponId() != null) {
+            discountAmount = userCouponService.validateAndCalculateDiscount(
+                    criteria.userCouponId(),
+                    userId,
+                    orderInfo.orderId(),
+                    orderInfo.totalPrice()
+            );
+        }
 
-        //주문 상태 변경하고 -> 결제중
+        orderService.setDiscountAmount(
+                orderInfo.orderId(),
+                discountAmount
+        );
 
-        // 유저 포인트 조회해서
+        userService.payProcess(userId, orderInfo.orderId());
 
-        return null;
+        BigDecimal finalAmount = orderInfo.totalPrice().subtract(discountAmount);
+
+        paymentService.processPayment(
+                criteria.orderId(),
+                userId,
+                finalAmount
+        );
     }
 }
