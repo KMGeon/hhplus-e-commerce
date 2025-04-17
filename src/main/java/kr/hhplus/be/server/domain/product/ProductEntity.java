@@ -45,4 +45,15 @@ public class ProductEntity extends BaseTimeEntity {
         return this.category.getCategoryCode();
     }
 
+<<<<<<< HEAD
+=======
+
+    private void validateCategory(CategoryEnum category) {
+        if (category == null) {
+            throw new IllegalArgumentException("카테고리는 필수입니다");
+        } else {
+            CategoryEnum.getCategoryCode(category);
+        }
+    }
+>>>>>>> bdfa1d8 ([refactor] 불필요한 코드 삭제 및 리펙토링)
 }
