@@ -41,6 +41,9 @@ dependencies {
 	//validation
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 
+	//instancio
+	testImplementation("org.instancio:instancio-junit:5.4.0")
+
 	//lombok
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
@@ -55,8 +58,8 @@ dependencies {
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
-	testImplementation("org.testcontainers:junit-jupiter")
 	testImplementation("org.testcontainers:mysql")
+	testImplementation("org.testcontainers:junit-jupiter")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
