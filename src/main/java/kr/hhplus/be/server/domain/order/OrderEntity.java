@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.domain.order;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.common.BaseTimeEntity;
+import kr.hhplus.be.server.domain.BaseTimeEntity;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -73,12 +73,36 @@ public class OrderEntity extends BaseTimeEntity {
         }
     }
 
-
     public void addOrderItems(List<OrderItemEntity> orderItems) {
         this.orderProducts.addAll(orderItems);
         calculateTotalAmounts();
     }
 
+    public void validatePaymentAvailable() {
+        isNotExpiredOrder();
+        validateOrderStatus();
+        validateOrderAmount();
+    }
+
+    public void applyDiscount() {
+        calculateFinalAmount();
+    }
+
+    public void complete() {
+        this.status = OrderStatus.PAID;
+    }
+
+
+    private static LocalDateTime expireTimeProvider(LocalDateTime now) {
+        return now.plusMinutes(10);
+    }
+
+    private void calculateFinalAmount() {
+        this.finalAmount = this.totalPrice.subtract(this.discountAmount);
+        if (this.finalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            this.finalAmount = BigDecimal.ZERO;
+        }
+    }
 
     private void calculateTotalAmounts() {
         this.totalPrice = BigDecimal.valueOf(
@@ -94,42 +118,6 @@ public class OrderEntity extends BaseTimeEntity {
         );
     }
 
-    public void validatePaymentAvailable() {
-        isNotExpiredOrder();
-        validateOrderStatus();
-        validateOrderAmount();
-    }
-
-    public void applyDiscount() {
-        calculateFinalAmount();
-    }
-    private void calculateFinalAmount() {
-        this.finalAmount = this.totalPrice.subtract(this.discountAmount);
-        if (this.finalAmount.compareTo(BigDecimal.ZERO) < 0) {
-            this.finalAmount = BigDecimal.ZERO;
-        }
-    }
-
-    public void complete() {
-        this.status = OrderStatus.PAID;
-    }
-
-
-    private void validateDiscountAmount(BigDecimal discountAmount) {
-        if (discountAmount == null) {
-            throw new IllegalArgumentException("할인 금액은 null일 수 없습니다.");
-        }
-        if (discountAmount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("할인 금액은 음수일 수 없습니다.");
-        }
-    }
-
-    private static LocalDateTime expireTimeProvider(LocalDateTime now) {
-        return now.plusMinutes(10);
-    }
-
-
-//    ====================================== VALIDATION ======================================
     private void validateOrderStatus() {
         if (this.status != OrderStatus.CONFIRMED) {
             throw new IllegalStateException(

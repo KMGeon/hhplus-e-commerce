@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.domain.common;
+package kr.hhplus.be.server.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
