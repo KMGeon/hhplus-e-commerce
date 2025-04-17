@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.domain.order;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class OrderCommand {
     public record Order(Long userId, List<Item>items) {
@@ -12,24 +11,9 @@ public class OrderCommand {
             }
         }
 
-        public  long calculateTotalPrice() {
-            return OrderCommand.calculateTotalPrice(this.items);
-        }
-        public long calculateTotalQuantity() {
-            return OrderCommand.calculateTotalQuantity(this.items);
-        }
     }
 
-    public record Item(Long productId, Long ea, Long price) {
+    public record Item(String skuId, Long ea) {
     }
 
-    public static long calculateTotalPrice(List<Item> items) {
-        return items.stream()
-                .collect(Collectors.summingLong(item -> item.ea() * item.price()));
-    }
-
-    public static long calculateTotalQuantity(List<Item> items) {
-        return items.stream()
-                .collect(Collectors.summingLong(Item::ea));
-    }
 }
