@@ -1,20 +1,25 @@
 package kr.hhplus.be.server.support;
 
+import kr.hhplus.be.server.domain.coupon.CouponEntity;
 import kr.hhplus.be.server.domain.product.CategoryEnum;
 import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.stock.StockEntity;
 import kr.hhplus.be.server.domain.user.UserEntity;
-import kr.hhplus.be.server.domain.user.UserRepository;
+import kr.hhplus.be.server.infrastructure.coupon.CouponJpaRepository;
 import kr.hhplus.be.server.infrastructure.product.ProductJpaRepository;
 import kr.hhplus.be.server.infrastructure.stock.StockJpaRepository;
+import kr.hhplus.be.server.infrastructure.user.UserJpaRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Configuration
 public class DataInitalize {
@@ -23,12 +28,22 @@ public class DataInitalize {
 
     @Bean
     public CommandLineRunner initUsers(
-            UserRepository userRepository
+            UserJpaRepository userRepository,
+            CouponJpaRepository couponJpaRepository
     ) {
         return args -> {
-            // 기본 사용자 생성
             UserEntity defaultUser = UserEntity.createNewUser();
             userRepository.save(defaultUser);
+
+            List<UserEntity> additionalUsers = IntStream.range(0, 30)
+                    .mapToObj(i -> UserEntity.createNewUser())
+                    .collect(Collectors.toList());
+
+            userRepository.saveAll(additionalUsers);
+            logger.info("사용자 초기 데이터 생성 완료: 총 {} 명", additionalUsers.size() + 1);
+
+            CouponEntity coupon = CouponEntity.createCoupon("생일기념 쿠폰", "FIXED_AMOUNT", 10, 1000, LocalDateTime.now());
+            couponJpaRepository.save(coupon);
         };
     }
 

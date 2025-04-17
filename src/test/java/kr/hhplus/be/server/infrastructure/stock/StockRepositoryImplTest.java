@@ -33,33 +33,18 @@ class StockRepositoryImplTest {
 
     @BeforeEach
     void setUp() {
-        // 기존 데이터 정리
         stockJpaRepository.deleteAll();
 
-        // 테스트 데이터 생성
         createTestData();
     }
 
     private void createTestData() {
-        // 다양한 SKU ID와 카테고리로 재고 생성
         testStocks = new ArrayList<>();
-
-        // iPhone 15 Pro 재고 10개 (3개는 이미 판매됨)
         createStocks("AP-IP15-PRO", CategoryEnum.APPLE, 10, 3);
-
-        // MacBook Air M2 재고 5개 (1개는 이미 판매됨)
         createStocks("AP-MB-AIR-M2", CategoryEnum.APPLE, 5, 1);
-
-        // Galaxy S24 Ultra 재고 15개 (5개는 이미 판매됨)
         createStocks("SM-S24-ULTRA", CategoryEnum.SAMSUNG, 15, 5);
-
-        // Galaxy Tab S9 재고 7개 (2개는 이미 판매됨)
         createStocks("SM-TAB-S9", CategoryEnum.SAMSUNG, 7, 2);
-
-        // LG Gram 17 재고 6개 (모두 판매 가능)
         createStocks("LG-GRAM-17", CategoryEnum.LG, 6, 0);
-
-        // 모든 재고 저장
         testStocks = stockJpaRepository.saveAll(testStocks);
     }
 
