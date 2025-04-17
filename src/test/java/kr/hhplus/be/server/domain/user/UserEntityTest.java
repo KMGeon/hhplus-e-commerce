@@ -199,6 +199,7 @@ class UserEntityTest {
         verify(mockOrder).validatePaymentAvailable();
         verify(mockOrder).getFinalAmount(); // validatePointAvailable에서 한 번
         verify(mockOrder).applyDiscount();
+
         verify(mockOrder, never()).complete(); // 예외 발생으로 호출되지 않아야 함
     }
 
