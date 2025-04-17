@@ -3,6 +3,7 @@ package kr.hhplus.be.server.domain.payment;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
@@ -12,6 +13,7 @@ public class PaymentService {
 
     private final PaymentRepository paymentRepository;
 
+    @Transactional
     public void processPayment(Long orderId, Long userId, BigDecimal amount) {
         try {
             PaymentEntity payment = createPayment(orderId, userId, amount);
