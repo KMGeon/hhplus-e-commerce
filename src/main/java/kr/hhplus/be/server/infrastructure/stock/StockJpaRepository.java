@@ -12,15 +12,6 @@ import java.util.List;
 public interface StockJpaRepository extends JpaRepository<StockEntity, Long> {
 
     @Query(nativeQuery = true, value = """
-            select count(a.stock_id)
-                        from(
-            select stock_id
-                            from stock
-                            where order_id is not null) as a
-            """)
-    Long getCountByProductId(Long productId);
-
-    @Query(nativeQuery = true, value = """
             SELECT 
                 sku_id AS skuId, 
                 COUNT(*) AS ea 

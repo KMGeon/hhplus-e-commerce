@@ -15,11 +15,6 @@ public class StockRepositoryImpl implements StockRepository {
     private final StockJpaRepository repository;
 
     @Override
-    public Long getCountByProductId(Long productId) {
-        return repository.getCountByProductId(productId);
-    }
-
-    @Override
     public List<EnoughStockDTO> findSkuIdAndAvailableEa(List<String> skuIds) {
         return repository.findSkuIdAndAvailableEa(skuIds);
     }
