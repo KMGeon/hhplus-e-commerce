@@ -5,8 +5,12 @@ import kr.hhplus.be.server.domain.BaseTimeEntity;
 import lombok.*;
 
 @Getter
-@ToString
 @Entity(name = "product")
+@Table(indexes = {
+        @Index(name = "idx_sku_id", columnList = "sku_id"),
+        @Index(name = "idx_category", columnList = "category"),
+
+})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
