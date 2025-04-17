@@ -15,6 +15,7 @@ public class UserService {
     private final UserCouponRepository userCouponRepository;
     private final OrderCoreRepository orderCoreRepository;
 
+    @Transactional(readOnly = true)
     public Long getUserPoint(long userId) {
         UserEntity user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 유저가 존재하지 않습니다."));
@@ -23,7 +24,9 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public long validateUserForCoupon(long userId, long couponId) {
-        long validatedUserId = getUserId(userId);
+        long validatedUserId = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 유저가 존재하지 않습니다."))
+                .getId();
         boolean hasCoupon = userCouponRepository.existsCoupon(userId, couponId);
 
         if (hasCoupon) throw new RuntimeException("사용자가 이미 해당 쿠폰을 보유하고 있습니다.");
