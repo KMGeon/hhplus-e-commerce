@@ -120,7 +120,8 @@ class CouponEntityTest {
                 .set(field(CouponEntity::getRemainQuantity), 0L)
                 .create();
 
-        // when & then
+        // when
+        // then
         assertThatThrownBy(() -> zeroCoupon.validateForPublish())
                 .isInstanceOf(RuntimeException.class)
                 .hasMessage("쿠폰이 모두 소진되었습니다.");
@@ -137,7 +138,8 @@ class CouponEntityTest {
                 .set(field(CouponEntity::getRemainQuantity), 10L)
                 .create();
 
-        // when & then (예외가 발생하지 않아야 함)
+        // when
+        // then
         validCoupon.validateForPublish();
     }
 

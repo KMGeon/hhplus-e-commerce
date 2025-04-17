@@ -29,7 +29,7 @@ public class OrderEntity extends BaseTimeEntity {
     private Long userCouponId;
 
 
-    @Column(length = 5, nullable = false)
+    @Column(length = 5, nullable = false, columnDefinition = "varchar(5) COLLATE utf8mb4_0900_ai_ci")
     private String datePath;
 
     @Enumerated(EnumType.STRING)

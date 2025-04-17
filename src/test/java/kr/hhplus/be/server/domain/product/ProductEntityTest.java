@@ -62,7 +62,6 @@ class ProductEntityTest {
     }
 
 
-    // 테스트에 사용할 샘플 상품 생성 헬퍼 메소드
     private ProductEntity createSampleProduct() {
         return ProductEntity.builder()
                 .skuId("SKU456789")
