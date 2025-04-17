@@ -15,25 +15,12 @@ import java.util.Optional;
 public class ProductRepositoryImpl implements ProductRepository {
     private final ProductJpaRepository repository;
 
-    @Override
-    public List<ProductEntity> findAll() {
-        return repository.findAll();
-    }
-
-    @Override
-    public List<ProductEntity> findByCategory(String category) {
-        return repository.findByCategory(category);
-    }
 
     @Override
     public Optional<ProductEntity> findById(Long id) {
         return repository.findById(id);
     }
 
-    @Override
-    public List<ProductEntity> findAllByIdIn(List<Long> productIds) {
-        return repository.findAllByIdIn(productIds);
-    }
 
     @Override
     public List<ProductEntity> findAllBySkuIdIn(List<String> skuIds) {

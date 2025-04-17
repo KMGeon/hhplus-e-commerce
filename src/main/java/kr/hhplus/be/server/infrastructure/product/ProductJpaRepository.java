@@ -9,11 +9,6 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface ProductJpaRepository extends JpaRepository<ProductEntity,Long> {
-    @Query("SELECT p FROM product p WHERE p.category = :category")
-    List<ProductEntity> findByCategory(@Param("category") String category);
-
-    @Query("SELECT p FROM product p WHERE p.id IN :productIds")
-    List<ProductEntity> findAllByIdIn(@Param("productIds") List<Long> productIds);
 
     @Query(nativeQuery = true, value = """
             SELECT
