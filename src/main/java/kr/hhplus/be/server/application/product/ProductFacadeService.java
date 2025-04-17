@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.application.product;
 
 import kr.hhplus.be.server.application.product.strategy.ProductFetchStrategyFactory;
-import kr.hhplus.be.server.domain.product.dto.ProductInfo;
+import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +12,7 @@ import java.util.List;
 public class ProductFacadeService {
     private final ProductFetchStrategyFactory strategyFactory;
 
-    public List<ProductInfo.ProductInfoResponse> getProducts(String category) {
+    public List<ProductStockDTO> getProducts(String category) {
         return strategyFactory.getStrategy(category)
                 .fetch();
     }

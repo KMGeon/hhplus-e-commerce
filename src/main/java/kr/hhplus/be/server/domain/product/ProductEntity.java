@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.product;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.domain.BaseTimeEntity;
 import lombok.*;
 
 @Getter
@@ -9,7 +10,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ProductEntity {
+public class ProductEntity extends BaseTimeEntity {
 
     private static final int MIN_PRODUCT_NAME_LENGTH = 2;
     private static final long MIN_PRICE = 0L;
@@ -20,16 +21,16 @@ public class ProductEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String skuId;
-
-    @Column(nullable = false)
-    private String productName;
-
     @Enumerated(EnumType.STRING)
     private CategoryEnum category;
 
-    private Long price;
+    @Column(name = "sku_id", nullable = false)
+    private String skuId;
+
+    @Column(name = "product_name", nullable = false)
+    private String productName;
+
+    private Long unitPrice;
 
     public String getCategory() {
         return this.category.getCategoryCode();
@@ -51,7 +52,7 @@ public class ProductEntity {
         this.productName = productName;
         this.skuId = skuId;
         this.category = category;
-        this.price = price;
+        this.unitPrice = price;
 
         return this;
     }
@@ -71,24 +72,21 @@ public class ProductEntity {
     }
 
     public ProductEntity updatePrice(Long price) {
-        this.price = price;
+        this.unitPrice = price;
         return this;
     }
 
     public ProductEntity adjustPrice(long amount) {
-        long newPrice = this.price + amount;
-        this.price = newPrice;
+        long newPrice = this.unitPrice + amount;
+        this.unitPrice = newPrice;
         return this;
     }
 
     private void validateCategory(CategoryEnum category) {
-
         if (category == null) {
             throw new IllegalArgumentException("카테고리는 필수입니다");
         } else {
             CategoryEnum.getCategoryCode(category);
         }
-
-
     }
 }

@@ -2,35 +2,45 @@ package kr.hhplus.be.server.infrastructure.product;
 
 import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.product.ProductRepository;
-import kr.hhplus.be.server.domain.product.dto.ProductInfo;
+import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 
 @Component
 @RequiredArgsConstructor
 public class ProductRepositoryImpl implements ProductRepository {
-    private final ProductFakeJpaRepository productFakeJpaRepository;
+    private final ProductJpaRepository repository;
+
 
     @Override
-    public List<ProductInfo.ProductInfoResponse> findProductWithStockByCategoryCode(String categoryCode) {
-        return productFakeJpaRepository.findProductWithStockByCategoryCode(categoryCode);
+    public Optional<ProductEntity> findById(Long id) {
+        return repository.findById(id);
+    }
+
+
+    @Override
+    public List<ProductEntity> findAllBySkuIdIn(List<String> skuIds) {
+        return repository.findAllBySkuIdIn(skuIds);
     }
 
     @Override
-    public List<ProductInfo.ProductInfoResponse> findProductWithStock() {
-        return productFakeJpaRepository.findProductWithStock();
+    public List<ProductStockDTO> getProductsWithStockInfoByCategory(String categoryCode) {
+        return repository.getProductsWithStockInfoByCategory(categoryCode);
     }
 
     @Override
-    public List<ProductEntity> findAll() {
-        return productFakeJpaRepository.findAll();
+    public List<ProductStockDTO> getProductsWithStockInfo() {
+        return repository.getProductsWithStockInfo();
     }
 
     @Override
-    public List<ProductEntity> findAllByIdIn(List<Long> productIds) {
-        return productFakeJpaRepository.findAllByIdIn(productIds);
+    public long countBySkuIdIn(List<String> skuIds) {
+        return repository.countBySkuIdIn(skuIds);
     }
+
+
 }
