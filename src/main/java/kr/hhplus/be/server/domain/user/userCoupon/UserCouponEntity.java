@@ -3,7 +3,6 @@ package kr.hhplus.be.server.domain.user.userCoupon;
 
 import jakarta.persistence.*;
 import kr.hhplus.be.server.domain.BaseTimeEntity;
-import kr.hhplus.be.server.domain.coupon.CouponEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,9 +31,6 @@ public class UserCouponEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private CouponStatus couponStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "coupon_id", insertable = false, updatable = false)
-    private CouponEntity coupon;
 
 
     public static UserCouponEntity publishCoupon(long userId, long couponId) {
@@ -45,9 +41,8 @@ public class UserCouponEntity extends BaseTimeEntity {
                 .build();
     }
 
-    public CouponEntity getCoupon() {
-        if (coupon == null) throw new RuntimeException("쿠폰 정보를 찾을 수 없습니다.");
-        return coupon;
+    public long getCouponId() {
+        return this.couponId;
     }
 
     public void isEqualUser(Long userId) {

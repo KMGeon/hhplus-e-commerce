@@ -36,51 +36,11 @@ public class ProductEntity extends BaseTimeEntity {
         return this.category.getCategoryCode();
     }
 
-    public ProductEntity updateProductName(String productName) {
-        this.productName = productName;
-        return this;
-    }
-
-    public ProductEntity updateSkuId(String skuId) {
-        this.skuId = skuId;
-        return this;
-    }
-
-    public ProductEntity updateProductInfo(String productName, String skuId, CategoryEnum category, Long price) {
-        validateCategory(category);
-
-        this.productName = productName;
-        this.skuId = skuId;
-        this.category = category;
-        this.unitPrice = price;
-
-        return this;
-    }
-
-    public ProductEntity updateCategory(CategoryEnum category) {
-        validateCategory(category);
-        this.category = category;
-        return this;
-    }
 
     public String getCategoryCode() {
         return this.category.getCategoryCode();
     }
 
-    public String getCategoryName() {
-        return this.category.getDescription();
-    }
-
-    public ProductEntity updatePrice(Long price) {
-        this.unitPrice = price;
-        return this;
-    }
-
-    public ProductEntity adjustPrice(long amount) {
-        long newPrice = this.unitPrice + amount;
-        this.unitPrice = newPrice;
-        return this;
-    }
 
     private void validateCategory(CategoryEnum category) {
         if (category == null) {

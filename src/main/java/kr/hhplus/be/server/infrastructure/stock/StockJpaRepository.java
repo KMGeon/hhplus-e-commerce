@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -43,4 +44,13 @@ public interface StockJpaRepository extends JpaRepository<StockEntity, Long> {
             @Param("skuId") String skuId,
             @Param("quantity") long quantity
     );
+
+
+    @Modifying
+    @Transactional
+    @Query(value = "UPDATE stock SET order_id = :orderId WHERE stock_id = :stockId", nativeQuery = true)
+    void updateOrderId(@Param("stockId") Long stockId, @Param("orderId") Long orderId);
+
+    @Query(value = "SELECT MAX(stock_id) FROM stock", nativeQuery = true)
+    long findMaxStockId();
 }

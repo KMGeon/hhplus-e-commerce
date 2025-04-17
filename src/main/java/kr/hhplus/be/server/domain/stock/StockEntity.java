@@ -31,12 +31,4 @@ public class StockEntity extends BaseTimeEntity {
         this.orderId = orderId;
     }
 
-    public void decreaseStock(Long orderId) {
-        if (this.orderId != null) throw new IllegalStateException("이미 할당된 재고입니다. stockId: " + this.id);
-        this.orderId = orderId;
-    }
-
-    public boolean isAllocated() {
-        return this.orderId != null;
-    }
 }

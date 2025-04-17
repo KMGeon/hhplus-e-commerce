@@ -23,10 +23,7 @@ public class UserCouponRepositoryImpl implements UserCouponRepository {
         return repository.findById(userCouponId);
     }
 
-    @Override
-    public Optional<UserCouponEntity> findByIdWithCoupon(long userCouponId) {
-        return repository.findByIdWithCoupon(userCouponId);
-    }
+
 
     @Override
     public boolean existsCoupon(long userId, long couponId) {

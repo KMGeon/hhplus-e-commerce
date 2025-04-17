@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.user.userCoupon;
 
 import kr.hhplus.be.server.domain.coupon.CouponEntity;
+import kr.hhplus.be.server.domain.coupon.CouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,6 +13,7 @@ import java.math.BigDecimal;
 public class UserCouponService {
 
     private final UserCouponRepository userCouponRepository;
+    private final CouponRepository couponRepository;
 
     @Transactional
     public void save(long userId, long couponId) {
@@ -28,14 +30,15 @@ public class UserCouponService {
 
     @Transactional(readOnly = true)
     public BigDecimal validateAndCalculateDiscount(Long userCouponId, Long userId, Long orderId, BigDecimal orderAmount) {
-        UserCouponEntity userCoupon = userCouponRepository.findByIdWithCoupon(userCouponId)
+        UserCouponEntity userCoupon = userCouponRepository.findById(userCouponId)
                 .orElseThrow(() -> new RuntimeException("사용자 쿠폰을 찾을 수 없습니다."));
 
         userCoupon.isEqualUser(userId);
 
         userCoupon.validateAvailable();
 
-        CouponEntity coupon = userCoupon.getCoupon();
+        CouponEntity coupon = couponRepository.findById(userCoupon.getCouponId())
+                .orElseThrow(() -> new RuntimeException("쿠폰을 찾을 수 없습니다."));
 
         BigDecimal rtn = coupon.calculateDiscountAmount(orderAmount);
 
