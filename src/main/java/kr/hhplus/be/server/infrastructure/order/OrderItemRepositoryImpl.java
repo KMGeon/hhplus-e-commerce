@@ -3,9 +3,11 @@ package kr.hhplus.be.server.infrastructure.order;
 import kr.hhplus.be.server.domain.order.OrderCoreRepository;
 import kr.hhplus.be.server.domain.order.OrderEntity;
 import kr.hhplus.be.server.domain.order.OrderItemEntity;
+import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -23,6 +25,11 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
     @Override
     public Optional<OrderEntity> findById(Long id) {
         return orderJpaRepository.findById(id);
+    }
+
+    @Override
+    public List<HotProductDTO> findHotProducts(String startPath, String endPath) {
+        return orderJpaRepository.findHotProducts(startPath, endPath);
     }
 
 
