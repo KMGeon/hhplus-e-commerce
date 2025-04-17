@@ -1,60 +1,37 @@
 package kr.hhplus.be.server.interfaces.coupon;
 
 import jakarta.validation.Valid;
-import kr.hhplus.be.server.interfaces.common.ApiResponse;
-import kr.hhplus.be.server.interfaces.coupon.dto.request.CouponPublishRequest;
-import kr.hhplus.be.server.interfaces.coupon.dto.response.CouponResponse;
-import kr.hhplus.be.server.interfaces.coupon.dto.response.UserCouponResponse;
-import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.util.List;
+import kr.hhplus.be.server.application.coupon.CouponCriteria;
+import kr.hhplus.be.server.application.coupon.CouponFacadeService;
+import kr.hhplus.be.server.domain.coupon.CouponInfo;
+import kr.hhplus.be.server.domain.coupon.CouponService;
+import kr.hhplus.be.server.support.ApiResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/v1")
+@RequiredArgsConstructor
 public class CouponController {
 
-    /**
-     *
-     * @param userId
-     * @return 유저가 보유한 쿠폰 리스트
-     */
-    @GetMapping("/coupon")
-    public ApiResponse<List<UserCouponResponse>> getUserCouponList(
-            @RequestParam(value = "userId") String userId
-    ) {
-        List<UserCouponResponse> couponList = List.of(
-                new UserCouponResponse(1L, "쿠폰1", 10.0, LocalDateTime.now().plusDays(1)),
-                new UserCouponResponse(2L, "쿠폰2", 20.0, LocalDateTime.now().plusDays(2)),
-                new UserCouponResponse(3L, "쿠폰3", 30.0, LocalDateTime.now().plusDays(3))
-        );
-        return ApiResponse.success(couponList);
-    }
+    private final CouponService couponService;
+    private final CouponFacadeService couponFacadeService;
 
-    /**
-     *
-     * @return 쿠폰 리스트 조회
-     */
-    @GetMapping("/coupons")
-    public ApiResponse<List<CouponResponse>> getCouponList(){
-        List<CouponResponse> couponList = List.of(
-                new CouponResponse(1L, "쿠폰1", 10.0, LocalDateTime.now().plusDays(1)),
-                new CouponResponse(2L, "쿠폰2", 20.0, LocalDateTime.now().plusDays(2)),
-                new CouponResponse(3L, "쿠폰3", 30.0, LocalDateTime.now().plusDays(3))
-        );
-        return ApiResponse.success(couponList);
-    }
 
-    /**
-     *
-     * @param couponPublishRequest
-     * @return 쿠폰을 발행합니다.
-     */
     @PostMapping("/coupon")
-    public ApiResponse<Integer> createCoupon(
-            @Valid @RequestBody CouponPublishRequest couponPublishRequest
-    ) {
-        return ApiResponse.maskToInteger(1);
+    public ApiResponse<CouponResponse.CreateCouponResponse> createCoupon(@RequestBody CouponRequest.Create createRequest) {
+        CouponInfo.CreateInfo couponInfo = couponService.save(createRequest.toCommand());
+        return ApiResponse.success(CouponResponse.CreateCouponResponse.of(couponInfo));
+    }
+
+    @PostMapping("/coupon/publish")
+    public ApiResponse<Long> publishCoupon(
+            @Valid @RequestBody CouponRequest.Publish publishRequest) {
+        CouponCriteria.PublishCriteria criteria = publishRequest.toCriteria();
+        return ApiResponse.success(couponFacadeService.publishCoupon(criteria));
     }
 
 }
