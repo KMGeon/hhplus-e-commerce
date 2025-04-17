@@ -1,29 +1,54 @@
 package kr.hhplus.be.server.domain.payment;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.domain.common.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+
+import java.math.BigDecimal;
 
 @Entity
+@Table(name = "payments")
 @Getter
-@ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PaymentEntity {
+public class PaymentEntity extends BaseTimeEntity {
+
     @Id
-    @Column(name = "payment_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "order_id", nullable = false)
+    @Column(nullable = false)
     private Long orderId;
 
-    @Column(name = "user_id", nullable = false)
+    @Column(nullable = false)
     private Long userId;
 
-    @Column(name = "error_reason", nullable = true)
-    private String errorReason;
+    @Column(nullable = false)
+    private BigDecimal amount;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private PaymentStatus status;
 
 
-}
+    private PaymentEntity(Long orderId, Long userId, BigDecimal amount) {
+        this.orderId = orderId;
+        this.userId = userId;
+        this.amount = amount;
+        this.status = PaymentStatus.PENDING;
+    }
+
+    public static PaymentEntity create(Long orderId, Long userId, BigDecimal amount) {
+        return new PaymentEntity(orderId, userId, amount);
+    }
+
+    public void complete() {
+        this.status = PaymentStatus.COMPLETED;
+    }
+
+    public void fail() {
+        this.status = PaymentStatus.FAILED;
+    }
+
+} 
