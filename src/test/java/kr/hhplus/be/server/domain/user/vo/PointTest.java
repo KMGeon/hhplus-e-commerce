@@ -1,8 +1,7 @@
 package kr.hhplus.be.server.domain.user.vo;
 
-import static org.junit.jupiter.api.Assertions.*;
 
-
+import kr.hhplus.be.server.domain.user.Point;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;

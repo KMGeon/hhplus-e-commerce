@@ -1,18 +1,18 @@
 package kr.hhplus.be.server.domain.user;
 
-import kr.hhplus.be.server.domain.user.command.UserChargeCommand;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -31,41 +31,36 @@ class UserServiceTest {
     @Nested
     class 충전 {
 
-        @Test
-        public void 포인트_충전이_성공적으로_수행된다() {
+        @ParameterizedTest
+        @ValueSource(longs = {1000L, 2000L, 3000L})
+        @DisplayName("포인트 충전 테스트")
+        public void 포인트_충전이_성공적으로_수행된다(long chargeAmount) throws Exception {
             // given
-            long initialAmount = 0L;
-            long chargeAmount = 1000L;
-            long expectedAmount = initialAmount + chargeAmount;
-
             UserEntity initialUser = UserEntity.createNewUser();
-            UserChargeCommand command = new UserChargeCommand(EXIST_USER, chargeAmount);
+            UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(1L, chargeAmount);
 
             when(userRepository.findById(any())).thenReturn(Optional.of(initialUser));
-            when(userRepository.update(any(UserEntity.class))).thenReturn(initialUser);
 
             // when
-            UserEntity user = userService.charge(command);
+            UserInfo.UserChargeInfo rtn = userService.charge(pointCharge);
 
             // then
-            assertNotNull(user);
-            long point = user.getPoint();
-            assertEquals(point, expectedAmount);
+            assertEquals(rtn.amount(),chargeAmount,"기본 유저에서 포인트를 충전하면 충전된 포인트가 반환되어야 한다.");
         }
 
-        @Test
-        public void 없는_사용자_포인트_충전() throws Exception {
+        @ParameterizedTest
+        @ValueSource(longs = {0L, -1000L, -2000L})
+        public void 음수_및_Zero_포인트_충전(long chargeAmount) throws Exception {
             // given
-            UserChargeCommand command = new UserChargeCommand(NO_SIGNUP_USER, 1000L);
+            UserEntity initialUser = UserEntity.createNewUser();
+            UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(1L, chargeAmount);
+            when(userRepository.findById(any())).thenReturn(Optional.of(initialUser));
 
             // when
             // then
-            Assertions.assertThatThrownBy(() -> userService.charge(command))
-                    .isInstanceOf(RuntimeException.class)
-                    .hasMessageContaining("해당 유저가 존재하지 않습니다.");
+            Assertions.assertThatThrownBy(() -> userService.charge(pointCharge))
+                            .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("충전 금액은 양수여야 합니다");
         }
     }
 }
-
-// 크리테리아 facade
-// command

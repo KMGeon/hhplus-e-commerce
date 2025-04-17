@@ -4,5 +4,5 @@ import java.util.Optional;
 
 public interface UserRepository {
     Optional<UserEntity> findById(Long userId);
-    UserEntity update(UserEntity userEntity);
+    UserEntity save(UserEntity user);
 }
