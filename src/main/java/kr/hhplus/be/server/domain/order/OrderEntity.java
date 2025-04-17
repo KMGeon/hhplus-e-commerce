@@ -29,7 +29,7 @@ public class OrderEntity extends BaseTimeEntity {
     private Long userCouponId;
 
 
-    @Column(length = 5, nullable = false, columnDefinition = "varchar(5) COLLATE utf8mb4_0900_ai_ci")
+    @Column(length = 5, nullable = false, columnDefinition = "varchar(5) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin")
     private String datePath;
 
     @Enumerated(EnumType.STRING)
@@ -37,7 +37,7 @@ public class OrderEntity extends BaseTimeEntity {
 
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "order_id")
+    @JoinColumn(name = "order_id", foreignKey = @ForeignKey(value = ConstraintMode.NO_CONSTRAINT))
     private List<OrderItemEntity> orderProducts = new ArrayList<>();
 
     private BigDecimal totalEa;
