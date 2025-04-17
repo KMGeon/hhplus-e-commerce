@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.domain.user.vo;
+package kr.hhplus.be.server.domain.user;
 
 import lombok.Getter;
 import lombok.ToString;
@@ -29,34 +29,23 @@ public class Point {
     }
 
     public Point add(long amount) {
-        if (amount == ZERO) {
-            return this;
-        }
-
+        if (amount == ZERO) return this;
         validateNonNegative(amount, "추가할 포인트는 양수여야 합니다");
-
         long newAmount = this.amount + amount;
         validateNotExceedLimit(newAmount);
-
         return new Point(newAmount);
     }
 
     public Point decreasePoint(long amount) {
-        if (amount == ZERO) {
-            return this;
-        }
-
+        if (amount == ZERO) return this;
         validateNonNegative(amount, "차감할 포인트는 양수여야 합니다");
         validateSufficientBalance(amount);
-
         return new Point(this.amount - amount);
     }
 
     private void validateNotExceedLimit(long amount) {
         if (amount > MAX_LIMIT_POINT) {
-            throw new IllegalArgumentException(
-                    String.format("포인트는 최대 %d을 초과할 수 없습니다", MAX_LIMIT_POINT)
-            );
+            throw new IllegalArgumentException(String.format("포인트는 최대 %d을 초과할 수 없습니다", MAX_LIMIT_POINT));
         }
     }
 
