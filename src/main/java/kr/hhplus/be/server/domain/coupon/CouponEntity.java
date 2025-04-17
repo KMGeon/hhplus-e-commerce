@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.domain.coupon;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.common.BaseTimeEntity;
+import kr.hhplus.be.server.domain.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,35 +52,15 @@ public class CouponEntity extends BaseTimeEntity {
     }
 
 
-    // 만료 , 재고 판단
     public void validateForPublish() {
         validateExpiration();
         validateQuantity();
     }
 
-    private void validateQuantity() {
-        if (remainQuantity <= 0) {
-            throw new RuntimeException("쿠폰이 모두 소진되었습니다.");
-        }
-    }
-    private void validateExpiration() {
-        if (LocalDateTime.now().isAfter(expireTime)) {
-            throw new RuntimeException("만료된 쿠폰입니다.");
-        }
-    }
-
-
-    /**
-     * 쿠폰 발행 처리
-     */
     public void decreaseQuantity() {
         this.remainQuantity--;
     }
 
-
-    /**
-     * 할인 금액 계산
-     */
     public BigDecimal calculateDiscountAmount(BigDecimal orderAmount) {
         return switch (discountType) {
             case FIXED_AMOUNT -> BigDecimal.valueOf(discountAmount).min(orderAmount);
@@ -92,6 +72,17 @@ public class CouponEntity extends BaseTimeEntity {
         return now.plusDays(10);
     }
 
+
+    private void validateQuantity() {
+        if (remainQuantity <= 0) {
+            throw new RuntimeException("쿠폰이 모두 소진되었습니다.");
+        }
+    }
+    private void validateExpiration() {
+        if (LocalDateTime.now().isAfter(expireTime)) {
+            throw new RuntimeException("만료된 쿠폰입니다.");
+        }
+    }
 
     @Builder
     private CouponEntity(Long id, String name, CouponDiscountType discountType, long initQuantity, long remainQuantity, double discountAmount, LocalDateTime expireTime) {
