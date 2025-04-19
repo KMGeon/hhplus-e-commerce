@@ -46,8 +46,8 @@ public class UserEntity extends BaseTimeEntity {
 
     public void pay(OrderEntity order) {
         order.validatePaymentAvailable();
-        order.applyDiscount();
         validatePointAvailable(order.getFinalAmount());
+        order.applyDiscount();
         usePoint(order.getFinalAmount().longValue());
         order.complete();
     }
