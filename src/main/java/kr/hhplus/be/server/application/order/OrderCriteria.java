@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.application.order;
 
 import kr.hhplus.be.server.domain.order.OrderCommand;
+import kr.hhplus.be.server.domain.stock.StockCommand;
 
 import java.util.List;
 
@@ -13,12 +14,20 @@ public class OrderCriteria {
             return new OrderCommand.Order(
                     this.userId,
                     this.products().stream()
-                            .map(item -> new OrderCommand.Item(item.productId(), item.ea(), item.price()))
+                            .map(item -> new OrderCommand.Item(item.skuId(), item.ea()))
+                            .toList()
+            );
+        }
+
+        public StockCommand.Order toStockCommand() {
+            return new StockCommand.Order(
+                    this.products().stream()
+                            .map(item -> new StockCommand.Order.Item(item.skuId(), item.ea()))
                             .toList()
             );
         }
     }
 
-    public record Item(Long productId, long ea, long price) {
+    public record Item(String skuId, long ea) {
     }
 }

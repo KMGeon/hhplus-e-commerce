@@ -11,15 +11,15 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserRepositoryImpl  implements UserRepository {
 
-    private final UserJpaFakeRepository userJpaFakeRepository;
+    private final UserJpaRepository userJpaRepository;
 
     @Override
     public Optional<UserEntity> findById(Long userId) {
-        return userJpaFakeRepository.findById(userId);
+        return userJpaRepository.findById(userId);
     }
 
     @Override
-    public UserEntity update(UserEntity userEntity) {
-        return userJpaFakeRepository.update(userEntity);
+    public UserEntity save(UserEntity user) {
+        return userJpaRepository.save(user);
     }
 }

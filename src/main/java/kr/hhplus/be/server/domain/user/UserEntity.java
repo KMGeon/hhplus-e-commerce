@@ -1,17 +1,19 @@
 package kr.hhplus.be.server.domain.user;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.user.vo.Point;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import kr.hhplus.be.server.domain.BaseTimeEntity;
+import kr.hhplus.be.server.domain.order.OrderEntity;
+import lombok.*;
+
+import java.math.BigDecimal;
 
 @Getter
 @ToString
-@Entity(name = "users")
+@Entity(name = "user")
+@Builder
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserEntity {
+public class UserEntity extends BaseTimeEntity {
     @Id
     @Column(name = "user_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,8 +40,22 @@ public class UserEntity {
         this.point = this.point.decreasePoint(amount);
     }
 
-    public long getPoint(){
+    public long getPoint() {
         return this.point.getAmount();
+    }
+
+    public void pay(OrderEntity order) {
+        order.validatePaymentAvailable();
+        order.applyDiscount();
+        validatePointAvailable(order.getFinalAmount());
+        usePoint(order.getFinalAmount().longValue());
+        order.complete();
+    }
+
+    private void validatePointAvailable(BigDecimal amount) {
+        if (this.point.getAmount() < amount.longValue()) {
+            throw new IllegalStateException("포인트가 부족합니다.");
+        }
     }
 }
 

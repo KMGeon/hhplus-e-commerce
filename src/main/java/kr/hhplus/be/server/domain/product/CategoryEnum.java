@@ -9,11 +9,11 @@ import java.util.Optional;
 @Getter
 @AllArgsConstructor
 public enum CategoryEnum {
-    APPLE("A", "애플"),
-    SAMSUNG("S", "삼성"),
-    LG("G", "엘지"),
-    SONY("Y", "소니"),
-    DELL("D", "델");
+    APPLE("APPLE", "애플"),
+    SAMSUNG("SAMSUNG", "삼성"),
+    LG("LG", "엘지"),
+    SONY("SONY", "소니"),
+    DELL("DELL", "델");
 
     private String categoryCode;
     private String description;

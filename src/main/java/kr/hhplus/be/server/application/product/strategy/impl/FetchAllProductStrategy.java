@@ -2,7 +2,7 @@ package kr.hhplus.be.server.application.product.strategy.impl;
 
 import kr.hhplus.be.server.application.product.strategy.ProductFetchStrategy;
 import kr.hhplus.be.server.domain.product.ProductService;
-import kr.hhplus.be.server.domain.product.dto.ProductInfo;
+import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -14,7 +14,7 @@ public class FetchAllProductStrategy implements ProductFetchStrategy {
     private final ProductService productService;
 
     @Override
-    public List<ProductInfo.ProductInfoResponse> fetch() {
+    public List<ProductStockDTO> fetch() {
         return productService.getAllProduct();
     }
 }
