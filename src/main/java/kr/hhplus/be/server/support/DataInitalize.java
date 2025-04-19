@@ -47,6 +47,7 @@ public class DataInitalize {
         };
     }
 
+
     @Bean
     public CommandLineRunner initProducts(
             ProductJpaRepository productRepository,
