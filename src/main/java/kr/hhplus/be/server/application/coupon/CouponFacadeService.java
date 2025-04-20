@@ -10,21 +10,13 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class CouponFacadeService {
-    private final CouponService couponService;
-    private final UserService userService;
+
     private final UserCouponService userCouponService;
+    private final CouponService couponService;
 
     @Transactional
     public long publishCoupon(CouponCriteria.PublishCriteria criteria) {
-        // 1. 사용자 검증
-        long userId = userService.validateUserForCoupon(criteria.userId(), criteria.couponId());
-
-        // 2. 쿠폰 발행 가능 여부 검증 및 수량 감소
-        couponService.validateAndDecreaseCoupon(criteria.couponId());
-
-        // 3. 사용자 쿠폰 발행
-        userCouponService.save(userId, criteria.couponId());
-
-        return userId;
+        couponService.decreaseCouponQuantityAfterCheck(criteria.couponId());
+        return userCouponService.publishOnlyIfFirstTime(criteria);
     }
 }

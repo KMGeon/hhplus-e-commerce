@@ -22,14 +22,17 @@ public class CouponController {
 
 
     @PostMapping("/coupon")
-    public ApiResponse<CouponResponse.CreateCouponResponse> createCoupon(@RequestBody CouponRequest.Create createRequest) {
+    public ApiResponse<CouponResponse.CreateCouponResponse> createCoupon(
+            @RequestBody CouponRequest.Create createRequest
+    ) {
         CouponInfo.CreateInfo couponInfo = couponService.save(createRequest.toCommand());
         return ApiResponse.success(CouponResponse.CreateCouponResponse.of(couponInfo));
     }
 
     @PostMapping("/coupon/publish")
     public ApiResponse<Long> publishCoupon(
-            @Valid @RequestBody CouponRequest.Publish publishRequest) {
+            @Valid @RequestBody CouponRequest.Publish publishRequest
+    ) {
         CouponCriteria.PublishCriteria criteria = publishRequest.toCriteria();
         return ApiResponse.success(couponFacadeService.publishCoupon(criteria));
     }
