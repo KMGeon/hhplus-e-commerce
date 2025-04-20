@@ -31,8 +31,6 @@ public class UserCouponEntity extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private CouponStatus couponStatus;
 
-
-
     public static UserCouponEntity publishCoupon(long userId, long couponId) {
         return UserCouponEntity.builder()
                 .userId(userId)
@@ -41,20 +39,25 @@ public class UserCouponEntity extends BaseTimeEntity {
                 .build();
     }
 
+    public boolean isFirstPublish() {
+        return this == null ? true : false;
+    }
+
+
     public long getCouponId() {
         return this.couponId;
     }
 
-    public void isEqualUser(Long userId) {
+
+    public void checkThisCouponCanUse(final Long userId) {
         if (!this.userId.equals(userId))
             throw new IllegalArgumentException("사용자 정보가 일치하지 않습니다.");
-    }
 
-    public void validateAvailable() {
-        if (isUsed()) throw new RuntimeException("이미 사용된 쿠폰입니다. 주문번호: " + this.orderId);
+        if (isUsed())
+            throw new IllegalArgumentException("이미 사용된 쿠폰입니다. 주문번호: " + this.orderId);
 
         if (this.couponStatus != CouponStatus.AVAILABLE)
-            throw new RuntimeException("사용 가능한 상태가 아닙니다. 현재 상태: " + this.couponStatus);
+            throw new IllegalArgumentException("사용 가능한 상태가 아닙니다. 현재 상태: " + this.couponStatus);
     }
 
     public boolean isUsed() {
@@ -62,10 +65,10 @@ public class UserCouponEntity extends BaseTimeEntity {
     }
 
     public void use(Long orderId) {
-        validateAvailable();
         this.orderId = orderId;
         this.couponStatus = CouponStatus.USED;
     }
+
 
     @Builder
     private UserCouponEntity(Long id, Long userId, Long couponId, Long orderId, CouponStatus couponStatus) {

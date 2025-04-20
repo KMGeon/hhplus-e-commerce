@@ -2,7 +2,6 @@ package kr.hhplus.be.server.domain.user;
 
 import jakarta.persistence.*;
 import kr.hhplus.be.server.domain.BaseTimeEntity;
-import kr.hhplus.be.server.domain.order.OrderEntity;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -43,14 +42,14 @@ public class UserEntity extends BaseTimeEntity {
     public long getPoint() {
         return this.point.getAmount();
     }
-
-    public void pay(OrderEntity order) {
-        order.validatePaymentAvailable();
-        order.applyDiscount();
-        validatePointAvailable(order.getFinalAmount());
-        usePoint(order.getFinalAmount().longValue());
-        order.complete();
-    }
+//
+//    public void pay(OrderEntity order) {
+//        order.validatePaymentAvailable();
+////        order.applyDiscount();
+//        validatePointAvailable(order.getFinalAmount());
+//        usePoint(order.getFinalAmount().longValue());
+//        order.complete();
+//    }
 
     private void validatePointAvailable(BigDecimal amount) {
         if (this.point.getAmount() < amount.longValue()) {

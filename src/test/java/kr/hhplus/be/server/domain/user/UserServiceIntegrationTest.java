@@ -33,7 +33,7 @@ class UserServiceIntegrationTest extends ApplicationContext {
             UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(EXIST_USER, 1000L);
 
             // when
-            UserInfo.UserChargeInfo charge = userService.charge(pointCharge);
+            UserInfo.User charge = userService.charge(pointCharge);
             UserEntity getUser = userJpaRepository.findById(EXIST_USER).orElseThrow();
 
             // then

@@ -4,6 +4,6 @@ import java.util.Optional;
 
 public interface UserCouponRepository {
     UserCouponEntity save(UserCouponEntity userCouponEntity);
-    Optional<UserCouponEntity> findById(long userCouponId);
-    boolean existsCoupon(long userId, long couponId);
+    UserCouponEntity findById(long userCouponId);
+    UserCouponEntity findByUserIdAndCouponId(long userId, long couponId);
 }
