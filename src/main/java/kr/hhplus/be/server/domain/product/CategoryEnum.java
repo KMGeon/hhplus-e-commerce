@@ -28,10 +28,8 @@ public enum CategoryEnum {
     }
 
     public static String getCategoryCode(CategoryEnum categoryEnum) {
-        if (categoryEnum == null) {
+        if (categoryEnum == null)
             throw new IllegalArgumentException("카테고리 Enum이 null입니다.");
-        }
-
         return categoryEnum.getCategoryCode();
     }
 }

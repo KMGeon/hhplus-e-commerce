@@ -23,4 +23,9 @@ public class StockRepositoryImpl implements StockRepository {
     public int updateStockDecreaseFifo(long orderId, String skuId, long ea) {
         return repository.updateStockDecreaseFifo(orderId, skuId, ea);
     }
+
+    @Override
+    public void restoreStockByOrderId(Long orderId) {
+        repository.restoreStockByOrderId(orderId);
+    }
 }

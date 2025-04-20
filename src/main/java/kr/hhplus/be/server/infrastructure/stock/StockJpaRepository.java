@@ -13,16 +13,15 @@ import java.util.List;
 public interface StockJpaRepository extends JpaRepository<StockEntity, Long> {
 
     @Query(nativeQuery = true, value = """
-            SELECT 
-                sku_id AS skuId, 
-                COUNT(*) AS ea 
-            FROM 
-                stock 
-            WHERE 
-                order_id IS NULL 
-                AND sku_id IN :skuIds 
-            GROUP BY 
-                sku_id
+            SELECT a.sku_id AS skuId,
+                   COUNT(*) AS ea,
+                   MAX(b.unit_price) as unitPrice
+            FROM stock as a
+                     inner join product as b
+                                on a.sku_id = b.sku_id
+            WHERE a.order_id IS NULL
+              AND a.sku_id IN :skuIds
+            GROUP BY a.sku_id
             """)
     List<EnoughStockDTO> findSkuIdAndAvailableEa(@Param("skuIds") List<String> skuIds);
 
@@ -53,4 +52,13 @@ public interface StockJpaRepository extends JpaRepository<StockEntity, Long> {
 
     @Query(value = "SELECT MAX(stock_id) FROM stock", nativeQuery = true)
     long findMaxStockId();
+
+
+    @Modifying
+    @Query(nativeQuery = true, value = """
+            update stock s
+            set s.order_id = null
+            where s.order_id = :orderId
+            """)
+    void restoreStockByOrderId(@Param("orderId") Long orderId);
 }
