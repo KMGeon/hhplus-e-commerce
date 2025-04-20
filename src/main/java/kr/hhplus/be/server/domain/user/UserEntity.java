@@ -42,14 +42,6 @@ public class UserEntity extends BaseTimeEntity {
     public long getPoint() {
         return this.point.getAmount();
     }
-//
-//    public void pay(OrderEntity order) {
-//        order.validatePaymentAvailable();
-////        order.applyDiscount();
-//        validatePointAvailable(order.getFinalAmount());
-//        usePoint(order.getFinalAmount().longValue());
-//        order.complete();
-//    }
 
     private void validatePointAvailable(BigDecimal amount) {
         if (this.point.getAmount() < amount.longValue()) {
