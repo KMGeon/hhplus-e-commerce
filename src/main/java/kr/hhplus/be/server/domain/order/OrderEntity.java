@@ -58,14 +58,9 @@ public class OrderEntity extends BaseTimeEntity {
                 .build();
     }
 
-    public void orderStatusConfirm() {
-        this.status = OrderStatus.CONFIRMED;
-    }
-
 
     public void isAvailablePaymentState() {
         isNotExpiredOrder();
-
         if (this.status != OrderStatus.CONFIRMED) {
             throw new IllegalStateException(
                     String.format("결제 가능한 상태가 아닙니다. 주문번호: %d, 현재 상태: %s", this.id, this.status)
@@ -78,18 +73,17 @@ public class OrderEntity extends BaseTimeEntity {
         calculateTotalAmounts();
     }
 
-    public void validatePaymentAvailable() {
-        isNotExpiredOrder();
-        validateOrderStatus();
-        validateOrderAmount();
-    }
-
-    public void applyDiscount() {
+    public void applyDiscount(BigDecimal discountAmount) {
+        setDiscountAmount(discountAmount);
         calculateFinalAmount();
     }
 
     public void complete() {
         this.status = OrderStatus.PAID;
+    }
+
+    public void cancel() {
+        this.status = OrderStatus.CANCELLED;
     }
 
 
@@ -118,14 +112,6 @@ public class OrderEntity extends BaseTimeEntity {
         );
     }
 
-    private void validateOrderStatus() {
-        if (this.status != OrderStatus.CONFIRMED) {
-            throw new IllegalStateException(
-                    String.format("결제 가능한 상태가 아닙니다. 주문번호: %d, 현재 상태: %s", this.id, this.status)
-            );
-        }
-    }
-
     private boolean isNotExpiredOrder() {
         if (LocalDateTime.now().isAfter(this.expireTime)) {
             throw new RuntimeException("주문이 만료되었습니다. 주문번호: " + this.id);
@@ -133,10 +119,8 @@ public class OrderEntity extends BaseTimeEntity {
         return true;
     }
 
-    private void validateOrderAmount() {
-        if (this.totalPrice == null || this.totalPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalStateException("주문 금액이 유효하지 않습니다.");
-        }
+    private void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
 
@@ -151,9 +135,5 @@ public class OrderEntity extends BaseTimeEntity {
         this.totalPrice = totalPrice;
         this.totalEa = totalEa;
         this.expireTime = expireTime;
-    }
-
-    public void setDiscountAmount(BigDecimal discountAmount) {
-        this.discountAmount = discountAmount;
     }
 }

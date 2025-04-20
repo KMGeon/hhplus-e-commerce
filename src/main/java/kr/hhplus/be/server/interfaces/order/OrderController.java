@@ -17,9 +17,6 @@ public class OrderController {
 
     private final OrderFacadeService orderFacadeService;
 
-    /**
-     * 주문 생성
-     */
     @PostMapping("/order")
     public ApiResponse<Integer> createOrder(
             @Valid @RequestBody OrderRequestDTO.CreateOrderRequest request

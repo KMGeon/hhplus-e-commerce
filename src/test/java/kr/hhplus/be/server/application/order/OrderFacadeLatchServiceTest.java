@@ -80,7 +80,6 @@ class OrderFacadeLatchServiceTest {
 
         // then
         List<EnoughStockDTO> availableEa = stockRepository.findSkuIdAndAvailableEa(List.of(GALAXY_BOOK_PRO_SKU));
-        System.out.println("availableEa = " + availableEa);
 
         assertThat(successCount.get()).isNotEqualTo(orderCount);
     }

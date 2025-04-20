@@ -3,13 +3,17 @@ package kr.hhplus.be.server.application.order;
 import kr.hhplus.be.server.domain.order.OrderService;
 import kr.hhplus.be.server.domain.product.ProductService;
 import kr.hhplus.be.server.domain.stock.StockCommand;
+import kr.hhplus.be.server.domain.stock.StockInfo;
 import kr.hhplus.be.server.domain.stock.StockService;
+import kr.hhplus.be.server.domain.user.UserInfo;
 import kr.hhplus.be.server.domain.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+
+import static kr.hhplus.be.server.domain.stock.StockInfo.Stock.toOrderCommand;
 
 @Service
 @RequiredArgsConstructor
@@ -22,26 +26,16 @@ public class OrderFacadeService {
 
     @Transactional
     public int createOrder(OrderCriteria.Order criteria) {
-        Long requestUserId = criteria.userId();
+        UserInfo.User getUser = userService.getUser(criteria.userId());
 
-        userService.getUserId(requestUserId);
-
-        // 상품 ID 검증
-        List<String> skuIds = criteria.products().stream()
-                .map(item -> item.skuId())
-                .toList();
+        OrderCriteria.Item[] items = OrderCriteria.Item.toArray(criteria.products());
+        productService.checkProductSkuIds(items);
 
         StockCommand.Order stockCommand = criteria.toStockCommand();
-        productService.validateAllSkuIds(skuIds);
+        List<StockInfo.Stock> getStocks = stockService.checkEaAndProductInfo(stockCommand);
 
-        // 재고 검증
-        stockService.isEnoughStock(stockCommand);
+        Long createOrderId = orderService.createOrder(getUser.userId(), toOrderCommand(getStocks));
 
-
-        // 주문 생성
-        long createOrderId = orderService.createOrder(criteria.toCommand());
-
-        // 재고감소
         return stockService.decreaseStock(createOrderId, stockCommand);
     }
 }

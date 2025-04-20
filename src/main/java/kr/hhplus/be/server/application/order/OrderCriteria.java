@@ -10,11 +10,11 @@ public class OrderCriteria {
             Long userId,
             List<Item>products
     ){
-        public OrderCommand.Order toCommand() {
+        public OrderCommand.Order toOrderCommand() {
             return new OrderCommand.Order(
                     this.userId,
                     this.products().stream()
-                            .map(item -> new OrderCommand.Item(item.skuId(), item.ea()))
+                            .map(item -> new OrderCommand.Order.Item(item.skuId(), item.ea()))
                             .toList()
             );
         }
@@ -29,5 +29,8 @@ public class OrderCriteria {
     }
 
     public record Item(String skuId, long ea) {
+        public static OrderCriteria.Item[] toArray(List<Item> items){
+            return items.toArray(new OrderCriteria.Item[0]);
+        }
     }
 }

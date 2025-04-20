@@ -23,8 +23,9 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
     }
 
     @Override
-    public Optional<OrderEntity> findById(Long id) {
-        return orderJpaRepository.findById(id);
+    public OrderEntity findById(Long id) {
+        return orderJpaRepository.findById(id)
+                .orElseThrow(()-> new RuntimeException("주문이 존재하지 않습니다."));
     }
 
     @Override
