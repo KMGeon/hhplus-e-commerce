@@ -62,11 +62,13 @@ class PaymentEntityTest {
         PaymentEntity payment = PaymentEntity.create(1L, 100L, new BigDecimal("15000.00"));
         assertEquals(PaymentStatus.PENDING, payment.getStatus());
 
-        // when & then - 완료 상태로 변경
+        // when
+        // then
         payment.complete();
         assertEquals(PaymentStatus.COMPLETED, payment.getStatus());
 
-        // when & then - 실패 상태로 변경
+        // when
+        // then
         payment.fail();
         assertEquals(PaymentStatus.FAILED, payment.getStatus());
     }

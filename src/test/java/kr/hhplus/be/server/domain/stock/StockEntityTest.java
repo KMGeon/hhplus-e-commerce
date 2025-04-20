@@ -31,8 +31,7 @@ class StockEntityTest {
     }
 
     @Test
-    @DisplayName("재고 엔티티 빌더 - orderId가 null인 경우 테스트")
-    void testCreateStockEntityWithNullOrderId() {
+    void 재고_엔티티_빌더() {
         // given
         String skuId = "SKU789012";
         CategoryEnum category = CategoryEnum.SAMSUNG;
@@ -51,8 +50,7 @@ class StockEntityTest {
     }
 
     @Test
-    @DisplayName("setOrderId 메소드 테스트 - null에서 값 설정")
-    void testSetOrderId_fromNull() {
+    void setOrderId_메서드_테스트() {
         // given
         StockEntity stock = StockEntity.builder()
                 .skuId("SKU123")
@@ -69,8 +67,7 @@ class StockEntityTest {
     }
 
     @Test
-    @DisplayName("setOrderId 메소드 테스트 - 기존 값에서 새 값으로 변경")
-    void testSetOrderId_fromExistingValue() {
+    void 기존값에_새로운_값_변경() {
         // given
         Long originalOrderId = 100L;
         StockEntity stock = StockEntity.builder()
@@ -89,8 +86,7 @@ class StockEntityTest {
     }
 
     @Test
-    @DisplayName("setOrderId 메소드 테스트 - 기존 값에서 null로 변경")
-    void testSetOrderId_toNull() {
+    void 기존에_값을_널로_변경() {
         // given
         Long originalOrderId = 300L;
         StockEntity stock = StockEntity.builder()

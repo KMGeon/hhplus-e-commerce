@@ -88,7 +88,8 @@ class CategoryEnumTest {
         // given
         CategoryEnum nullCategory = null;
 
-        // when & then
+        // when
+// then
         assertThrows(IllegalArgumentException.class, () -> CategoryEnum.getCategoryCode(nullCategory));
     }
 }

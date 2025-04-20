@@ -41,7 +41,7 @@ class PointTest {
         @Test
         @DisplayName("음수 값으로 포인트 생성 시 예외 발생")
         void createPointWithNegativeAmount() {
-            // when & then
+            // when 
             assertThatThrownBy(() -> Point.of(-1L))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("포인트는 음수가 될 수 없습니다");
@@ -79,9 +79,9 @@ class PointTest {
             // given
             Point point = Point.of(100L);
 
-            // when
             Point result = point.add(50L);
 
+            // when
             // then
             assertThat(result.getAmount()).isEqualTo(150L);
         }
@@ -92,7 +92,8 @@ class PointTest {
             // given
             Point point = Point.of(100L);
 
-            // when & then
+            // when
+// then
             assertThatThrownBy(() -> point.add(-50L))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("추가할 포인트는 양수여야 합니다");
@@ -104,7 +105,8 @@ class PointTest {
             // given
             Point point = Point.of(999_000L);
 
-            // when & then
+            // when
+// then
             assertThatThrownBy(() -> point.add(2_000L))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("포인트는 최대 1000000을 초과할 수 없습니다");
@@ -147,7 +149,8 @@ class PointTest {
             // given
             Point point = Point.of(100L);
 
-            // when & then
+            // when
+// then
             assertThatThrownBy(() -> point.decreasePoint(-50L))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("차감할 포인트는 양수여야 합니다");
@@ -159,7 +162,8 @@ class PointTest {
             // given
             Point point = Point.of(100L);
 
-            // when & then
+            // when
+// then
             assertThatThrownBy(() -> point.decreasePoint(150L))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessage("차감할 포인트가 보유 포인트보다 많습니다");

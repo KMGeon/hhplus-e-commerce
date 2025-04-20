@@ -67,7 +67,6 @@ class CouponFacadeServiceLatchTest {
                         couponFacadeService.publishCoupon(criteria);
                         successCount.incrementAndGet();
                     } catch (Exception e) {
-                        System.out.println("발급 실패 (사용자 ID: " + criteria.userId() + "): " + e.getMessage());
                         failureCount.incrementAndGet();
                     }
                 } catch (InterruptedException e) {

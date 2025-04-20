@@ -1,8 +1,7 @@
 package kr.hhplus.be.server.domain.order;
 
 
-import kr.hhplus.be.server.domain.product.ProductEntity;
-import kr.hhplus.be.server.domain.product.ProductRepository;
+import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -12,108 +11,133 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Optional;
+import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class OrderServiceTest {
 
-    @InjectMocks
-    private OrderService orderService;
-
     @Mock
     private OrderCoreRepository orderCoreRepository;
 
-    @Mock
-    private ProductRepository productRepository;
+    @InjectMocks
+    private OrderService orderService;
 
     @Test
     void 주문_생성_성공() {
-        // given
         Long userId = 1L;
-        OrderCommand.Item item1 = new OrderCommand.Item("SKU001", 2L);
-        OrderCommand.Item item2 = new OrderCommand.Item("SKU002", 1L);
-        OrderCommand.Order orderCommand = new OrderCommand.Order(userId, Arrays.asList(item1, item2));
+        List<OrderCommand.Product> products = Arrays.asList(
+                new OrderCommand.Product("SKU001", 2L, 1000L),
+                new OrderCommand.Product("SKU002", 3L, 2000L)
+        );
 
-        ProductEntity product1 = mock(ProductEntity.class);
-        ProductEntity product2 = mock(ProductEntity.class);
+        OrderEntity mockEntity = mock(OrderEntity.class);
+        when(mockEntity.getId()).thenReturn(100L);
+        when(orderCoreRepository.save(any(OrderEntity.class))).thenReturn(mockEntity);
 
-        when(product1.getSkuId()).thenReturn("SKU001");
-        when(product2.getSkuId()).thenReturn("SKU002");
+        Long orderId = orderService.createOrder(userId, products);
 
-        when(productRepository.findAllBySkuIdIn(any())).thenReturn(Arrays.asList(product1, product2));
+        assertThat(orderId).isEqualTo(100L);
 
-        OrderEntity savedOrder = mock(OrderEntity.class);
-        when(savedOrder.getId()).thenReturn(1000L);
-        when(orderCoreRepository.save(any(OrderEntity.class))).thenReturn(savedOrder);
-
-        // when
-        long orderId = orderService.createOrder(orderCommand);
-
-        // then
-        assertEquals(1000L, orderId);
-
-        verify(productRepository).findAllBySkuIdIn(any());
-        verify(orderCoreRepository).save(any(OrderEntity.class));
-
-        // OrderEntity에 addOrderItems가 호출되는지 검증
         ArgumentCaptor<OrderEntity> orderCaptor = ArgumentCaptor.forClass(OrderEntity.class);
         verify(orderCoreRepository).save(orderCaptor.capture());
 
         OrderEntity capturedOrder = orderCaptor.getValue();
-        assertNotNull(capturedOrder);
-    }
-
-
-    @Test
-    void 결제_가능_주문_확인_실패_주문없음() {
-        // given
-        long nonExistentOrderId = 9999L;
-        when(orderCoreRepository.findById(nonExistentOrderId)).thenReturn(Optional.empty());
-
-        // when
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                orderService.isAvailableOrder(nonExistentOrderId));
-
-        // then
-        assertEquals("주문이 존재하지 않습니다.", exception.getMessage());
-        verify(orderCoreRepository).findById(nonExistentOrderId);
+        assertThat(capturedOrder.getUserId()).isEqualTo(userId);
+        assertThat(capturedOrder.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
+        assertThat(capturedOrder.getOrderProducts()).hasSize(2);
     }
 
     @Test
-    void 할인금액_설정_성공() {
-        // given
-        long orderId = 1000L;
+    void 주문_결제_가능_상태_확인() {
+        Long orderId = 100L;
+        OrderEntity mockOrder = mock(OrderEntity.class);
+        when(mockOrder.getId()).thenReturn(orderId);
+        when(mockOrder.getUserId()).thenReturn(1L);
+        when(mockOrder.getTotalPrice()).thenReturn(BigDecimal.valueOf(5000));
+        when(mockOrder.getFinalAmount()).thenReturn(BigDecimal.valueOf(5000));
+
+        when(orderCoreRepository.findById(orderId)).thenReturn(mockOrder);
+
+        OrderInfo.OrderPaymentInfo paymentInfo = orderService.isAvailableOrder(orderId);
+
+        assertThat(paymentInfo.orderId()).isEqualTo(orderId);
+        verify(mockOrder).isAvailablePaymentState();
+    }
+
+    @Test
+    void 주문_취소_처리() {
+        Long orderId = 100L;
+        OrderEntity mockOrder = mock(OrderEntity.class);
+        when(orderCoreRepository.findById(orderId)).thenReturn(mockOrder);
+
+        orderService.restoreOrderStatusCancel(orderId);
+
+        verify(mockOrder).cancel();
+    }
+
+    @Test
+    void 할인_적용_후_주문_완료_처리() {
+        Long orderId = 100L;
         BigDecimal discountAmount = BigDecimal.valueOf(1000);
+        BigDecimal finalAmount = BigDecimal.valueOf(4000);
 
-        OrderEntity order = mock(OrderEntity.class);
-        when(orderCoreRepository.findById(orderId)).thenReturn(Optional.of(order));
+        OrderEntity mockOrder = mock(OrderEntity.class);
+        when(mockOrder.getFinalAmount()).thenReturn(finalAmount);
+        when(orderCoreRepository.findById(orderId)).thenReturn(mockOrder);
 
-        // when
-        orderService.setDiscountAmount(orderId, discountAmount);
+        BigDecimal result = orderService.applyToDisCount(orderId, discountAmount);
 
-        // then
-        verify(orderCoreRepository).findById(orderId);
-        verify(order).setDiscountAmount(discountAmount);
+        assertThat(result).isEqualTo(finalAmount);
+        verify(mockOrder).applyDiscount(discountAmount);
+        verify(mockOrder).complete();
     }
 
     @Test
-    void 할인금액_설정_실패_주문없음() {
-        // given
-        long nonExistentOrderId = 9999L;
-        BigDecimal discountAmount = BigDecimal.valueOf(1000);
+    void 인기_상품_조회() {
+        String startPath = "0418";
+        String endPath = "0421";
 
-        when(orderCoreRepository.findById(nonExistentOrderId)).thenReturn(Optional.empty());
+        List<HotProductDTO> mockProducts = Arrays.asList(
+                createHotProductDTO("SKU001", 10L),
+                createHotProductDTO("SKU002", 8L)
+        );
 
-        // when
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                orderService.setDiscountAmount(nonExistentOrderId, discountAmount));
+        when(orderCoreRepository.findHotProducts(any(), any())).thenReturn(mockProducts);
 
-        // then
-        assertEquals("주문이 존재하지 않습니다.", exception.getMessage());
-        verify(orderCoreRepository).findById(nonExistentOrderId);
+        List<HotProductDTO> result = orderService.getHotProducts();
+
+        assertThat(result).hasSize(2);
+        assertThat(result).isEqualTo(mockProducts);
+
+        ArgumentCaptor<String> startPathCaptor = ArgumentCaptor.forClass(String.class);
+        ArgumentCaptor<String> endPathCaptor = ArgumentCaptor.forClass(String.class);
+        verify(orderCoreRepository).findHotProducts(startPathCaptor.capture(), endPathCaptor.capture());
+    }
+
+    private HotProductDTO createHotProductDTO(String skuId, Long orderCount) {
+        return new HotProductDTO() {
+            @Override
+            public String getSkuId() {
+                return skuId;
+            }
+
+            @Override
+            public Long getOrderCount() {
+                return orderCount;
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (this == obj) return true;
+                if (obj == null || getClass() != obj.getClass()) return false;
+                HotProductDTO other = (HotProductDTO) obj;
+                return getSkuId().equals(other.getSkuId()) &&
+                        getOrderCount().equals(other.getOrderCount());
+            }
+        };
     }
 }

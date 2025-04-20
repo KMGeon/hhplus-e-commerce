@@ -1,10 +1,6 @@
 package kr.hhplus.be.server.domain.order;
 
-import org.instancio.Instancio;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,14 +10,11 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.instancio.Select.field;
 
-@ExtendWith(MockitoExtension.class)
 class OrderEntityTest {
 
     @Test
-    @DisplayName("주문을 생성할 수 있다")
-    void createOrder() {
+    void 주문_생성_성공() {
         // given
         long userId = 1L;
         LocalDateTime now = LocalDateTime.now();
@@ -34,149 +27,63 @@ class OrderEntityTest {
         assertThat(order.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
         assertThat(order.getDatePath()).isEqualTo(DatePathProvider.toPath(now));
         assertThat(order.getExpireTime()).isEqualTo(now.plusMinutes(10));
+        assertThat(order.getOrderProducts()).isNotNull();
         assertThat(order.getOrderProducts()).isEmpty();
     }
 
     @Test
-    @DisplayName("주문 상태를 CONFIRMED로 변경할 수 있다")
-    void orderStatusConfirm() {
+    void 주문_상품_추가_성공() {
         // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getStatus), OrderStatus.PAID)
-                .create();
-
-        // when
-        order.orderStatusConfirm();
-
-        // then
-        assertThat(order.getStatus()).isEqualTo(OrderStatus.CONFIRMED);
-    }
-
-    @Test
-    @DisplayName("주문 아이템을 추가하고 총액을 계산할 수 있다")
-    void addOrderItems() {
-        // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getOrderProducts), new ArrayList<>())
-                .create();
-
-        List<OrderItemEntity> orderItems = Arrays.asList(
-                createOrderItem("상품1", 1000L, 2L),
-                createOrderItem("상품2", 3000L, 1L)
-        );
+        OrderEntity order = OrderEntity.createOrder(1L, LocalDateTime.now());
+        OrderItemEntity item1 = OrderItemEntity.createOrderItem("SKU001", 2L, 1000L);
+        OrderItemEntity item2 = OrderItemEntity.createOrderItem("SKU002", 3L, 2000L);
+        List<OrderItemEntity> orderItems = Arrays.asList(item1, item2);
 
         // when
         order.addOrderItems(orderItems);
 
         // then
         assertThat(order.getOrderProducts()).hasSize(2);
-        assertThat(order.getTotalPrice()).isEqualTo(BigDecimal.valueOf(5000));
-        assertThat(order.getTotalEa()).isEqualTo(BigDecimal.valueOf(3));
+        assertThat(order.getTotalEa()).isEqualByComparingTo(BigDecimal.valueOf(5)); // 2 + 3 = 5
+        assertThat(order.getTotalPrice()).isEqualByComparingTo(BigDecimal.valueOf(8000)); // (2*1000) + (3*2000) = 8000
     }
 
     @Test
-    @DisplayName("유효한 주문 상태가 아닌 경우 결제 검증에서 예외가 발생한다")
-    void validatePaymentAvailable_invalidStatus() {
+    void 할인_적용_성공() {
         // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getStatus), OrderStatus.PAID)
-                .set(field(OrderEntity::getExpireTime), LocalDateTime.now().plusMinutes(5))
-                .set(field(OrderEntity::getTotalPrice), BigDecimal.valueOf(1000))
-                .create();
-
-        // when & then
-        assertThatThrownBy(() -> order.validatePaymentAvailable())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("결제 가능한 상태가 아닙니다");
-    }
-
-    @Test
-    @DisplayName("주문이 만료된 경우 결제 검증에서 예외가 발생한다")
-    void validatePaymentAvailable_expired() {
-        // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getStatus), OrderStatus.CONFIRMED)
-                .set(field(OrderEntity::getExpireTime), LocalDateTime.now().minusMinutes(1))
-                .set(field(OrderEntity::getTotalPrice), BigDecimal.valueOf(1000))
-                .create();
-
-        // when & then
-        assertThatThrownBy(() -> order.validatePaymentAvailable())
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("주문이 만료되었습니다");
-    }
-
-    @Test
-    @DisplayName("주문 금액이 유효하지 않은 경우 결제 검증에서 예외가 발생한다")
-    void validatePaymentAvailable_invalidAmount() {
-        // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getStatus), OrderStatus.CONFIRMED)
-                .set(field(OrderEntity::getExpireTime), LocalDateTime.now().plusMinutes(5))
-                .set(field(OrderEntity::getTotalPrice), BigDecimal.ZERO)
-                .create();
-
-        // when & then
-        assertThatThrownBy(() -> order.validatePaymentAvailable())
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("주문 금액이 유효하지 않습니다");
-    }
-
-    @Test
-    @DisplayName("유효한 주문은 결제 검증을 통과할 수 있다")
-    void validatePaymentAvailable_validOrder() {
-        // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getStatus), OrderStatus.CONFIRMED)
-                .set(field(OrderEntity::getExpireTime), LocalDateTime.now().plusMinutes(5))
-                .set(field(OrderEntity::getTotalPrice), BigDecimal.valueOf(1000))
-                .create();
-
-        // when & then (예외가 발생하지 않아야 함)
-        order.validatePaymentAvailable();
-    }
-
-    @Test
-    @DisplayName("할인 금액을 적용하고 최종 금액을 계산할 수 있다")
-    void applyDiscount() {
-        // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getTotalPrice), BigDecimal.valueOf(10000))
-                .create();
-
-        order.setDiscountAmount(BigDecimal.valueOf(2000));
+        OrderEntity order = OrderEntity.createOrder(1L, LocalDateTime.now());
+        OrderItemEntity item = OrderItemEntity.createOrderItem("SKU001", 2L, 10000L);
+        order.addOrderItems(Arrays.asList(item));
+        BigDecimal discountAmount = BigDecimal.valueOf(5000);
 
         // when
-        order.applyDiscount();
+        order.applyDiscount(discountAmount);
 
         // then
-        assertThat(order.getFinalAmount()).isEqualTo(BigDecimal.valueOf(8000));
+        assertThat(order.getDiscountAmount()).isEqualByComparingTo(discountAmount);
+        assertThat(order.getFinalAmount()).isEqualByComparingTo(BigDecimal.valueOf(15000)); // 20000 - 5000 = 15000
     }
 
     @Test
-    @DisplayName("할인 금액이 주문 총액보다 큰 경우 최종 금액은 0이 된다")
-    void applyDiscount_discountGreaterThanTotal() {
+    void 할인액이_총_금액보다_클_경우_최종_금액은_0() {
         // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getTotalPrice), BigDecimal.valueOf(5000))
-                .create();
-
-        order.setDiscountAmount(BigDecimal.valueOf(7000));
+        OrderEntity order = OrderEntity.createOrder(1L, LocalDateTime.now());
+        OrderItemEntity item = OrderItemEntity.createOrderItem("SKU001", 1L, 1000L);
+        order.addOrderItems(Arrays.asList(item));
+        BigDecimal discountAmount = BigDecimal.valueOf(2000); // 총 금액 1000보다 큰 할인액
 
         // when
-        order.applyDiscount();
+        order.applyDiscount(discountAmount);
 
         // then
-        assertThat(order.getFinalAmount()).isEqualTo(BigDecimal.ZERO);
+        assertThat(order.getDiscountAmount()).isEqualByComparingTo(discountAmount);
+        assertThat(order.getFinalAmount()).isEqualByComparingTo(BigDecimal.ZERO);
     }
 
     @Test
-    @DisplayName("주문 상태를 PAID로 변경할 수 있다")
-    void complete() {
+    void 주문_완료_처리_성공() {
         // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getStatus), OrderStatus.CONFIRMED)
-                .create();
+        OrderEntity order = OrderEntity.createOrder(1L, LocalDateTime.now());
 
         // when
         order.complete();
@@ -186,52 +93,85 @@ class OrderEntityTest {
     }
 
     @Test
-    @DisplayName("만료된 주문은 결제 가능 상태 확인에서 예외가 발생한다")
-    void isAvailablePaymentState_expired() {
+    void 주문_취소_처리_성공() {
         // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getExpireTime), LocalDateTime.now().minusMinutes(1))
-                .create();
+        OrderEntity order = OrderEntity.createOrder(1L, LocalDateTime.now());
 
-        // when & then
-        assertThatThrownBy(() -> order.isAvailablePaymentState())
+        // when
+        order.cancel();
+
+        // then
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELLED);
+    }
+
+    @Test
+    void 결제_가능_상태_확인_성공() {
+        // given
+        OrderEntity order = OrderEntity.createOrder(1L, LocalDateTime.now());
+
+        // when
+        // then
+        order.isAvailablePaymentState();
+    }
+
+    @Test
+    void 만료된_주문은_결제_불가능() {
+        // given
+        LocalDateTime past = LocalDateTime.now().minusHours(1); // 1시간 전 (만료 시간은 10분이므로 만료됨)
+        OrderEntity order = OrderEntity.createOrder(1L, past);
+
+        // when
+        // then
+        assertThatThrownBy(order::isAvailablePaymentState)
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("주문이 만료되었습니다");
     }
 
     @Test
-    @DisplayName("CONFIRMED 상태가 아닌 주문은 결제 가능 상태 확인에서 예외가 발생한다")
-    void isAvailablePaymentState_notConfirmed() {
+    void 확정_상태가_아닌_주문은_결제_불가능() {
         // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getStatus), OrderStatus.PAID)
-                .set(field(OrderEntity::getExpireTime), LocalDateTime.now().plusMinutes(5))
-                .create();
+        OrderEntity order = OrderEntity.createOrder(1L, LocalDateTime.now());
+        order.cancel(); // 취소 상태로 변경
 
-        // when & then
-        assertThatThrownBy(() -> order.isAvailablePaymentState())
+        // when
+        // then
+        assertThatThrownBy(order::isAvailablePaymentState)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("결제 가능한 상태가 아닙니다");
     }
 
     @Test
-    @DisplayName("유효한 주문은 결제 가능 상태 확인을 통과할 수 있다")
-    void isAvailablePaymentState_valid() {
+    void 빌더_패턴으로_주문_생성_성공() {
         // given
-        OrderEntity order = Instancio.of(OrderEntity.class)
-                .set(field(OrderEntity::getStatus), OrderStatus.CONFIRMED)
-                .set(field(OrderEntity::getExpireTime), LocalDateTime.now().plusMinutes(5))
-                .create();
+        Long userId = 1L;
+        Long userCouponId = 100L;
+        String datePath = "0421";
+        OrderStatus status = OrderStatus.CONFIRMED;
+        List<OrderItemEntity> orderProducts = new ArrayList<>();
+        BigDecimal totalPrice = BigDecimal.valueOf(5000);
+        BigDecimal totalEa = BigDecimal.valueOf(2);
+        LocalDateTime expireTime = LocalDateTime.now().plusMinutes(10);
 
-        // when & then (예외가 발생하지 않아야 함)
-        order.isAvailablePaymentState();
-    }
-
-    private OrderItemEntity createOrderItem(String skuId, long price, long ea) {
-        return OrderItemEntity.builder()
-                .skuId(skuId)
-                .unitPrice(price)
-                .ea(ea)
+        // when
+        OrderEntity order = OrderEntity.builder()
+                .userId(userId)
+                .userCouponId(userCouponId)
+                .datePath(datePath)
+                .status(status)
+                .orderProducts(orderProducts)
+                .totalPrice(totalPrice)
+                .totalEa(totalEa)
+                .expireTime(expireTime)
                 .build();
+
+        // then
+        assertThat(order.getUserId()).isEqualTo(userId);
+        assertThat(order.getUserCouponId()).isEqualTo(userCouponId);
+        assertThat(order.getDatePath()).isEqualTo(datePath);
+        assertThat(order.getStatus()).isEqualTo(status);
+        assertThat(order.getOrderProducts()).isSameAs(orderProducts);
+        assertThat(order.getTotalPrice()).isEqualTo(totalPrice);
+        assertThat(order.getTotalEa()).isEqualTo(totalEa);
+        assertThat(order.getExpireTime()).isEqualTo(expireTime);
     }
 }

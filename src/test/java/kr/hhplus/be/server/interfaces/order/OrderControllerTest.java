@@ -52,7 +52,8 @@
 //        OrderInfo orderInfo = Instancio.create(OrderInfo.class);
 ////        when(orderFacadeService.createOrder(any())).thenReturn(orderInfo);
 //
-//        // when & then
+//        // when
+// then
 //        mockMvc.perform(post("/api/v1/order")
 //                        .contentType(MediaType.APPLICATION_JSON)
 //                        .content(requestBody))

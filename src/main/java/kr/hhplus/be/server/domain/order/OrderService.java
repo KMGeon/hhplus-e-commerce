@@ -1,10 +1,12 @@
 package kr.hhplus.be.server.domain.order;
 
+import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -41,5 +43,17 @@ public class OrderService {
         order.applyDiscount(discountAmount);
         order.complete();
         return order.getFinalAmount();
+    }
+
+    public List<HotProductDTO> getHotProducts() {
+        LocalDateTime current = LocalDateTime.now();
+
+        LocalDateTime startOfDay = current.minusDays(3).with(LocalTime.MIN);
+        LocalDateTime endOfDay = current.with(LocalTime.MAX);
+
+        String startPath = DatePathProvider.toPath(startOfDay);
+        String endPath = DatePathProvider.toPath(endOfDay);
+
+        return orderCoreRepository.findHotProducts(startPath, endPath);
     }
 }

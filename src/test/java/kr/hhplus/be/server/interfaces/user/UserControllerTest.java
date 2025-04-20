@@ -114,7 +114,8 @@
 //                    }
 //                    """;
 //
-//            // when & then
+//            // when
+// then
 //            mockMvc.perform(post("/api/v1/user/point")
 //                            .contentType(MediaType.APPLICATION_JSON)
 //                            .content(requestBody))
@@ -137,7 +138,8 @@
 //                    }
 //                    """;
 //
-//            // when & then
+//            // when
+// then
 //            mockMvc.perform(post("/api/v1/user/point")
 //                            .contentType(MediaType.APPLICATION_JSON)
 //                            .content(requestBody))

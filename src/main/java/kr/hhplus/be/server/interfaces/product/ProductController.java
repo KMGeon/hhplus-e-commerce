@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.interfaces.product;
 
 import kr.hhplus.be.server.application.product.ProductFacadeService;
-import kr.hhplus.be.server.domain.product.ProductService;
 import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import kr.hhplus.be.server.support.ApiResponse;
@@ -17,8 +16,6 @@ import java.util.List;
 public class ProductController {
 
     private final ProductFacadeService productFacadeService;
-    private final ProductService productService;
-
 
     /** 상품조회 **/
     @GetMapping("/api/v1/product")
@@ -31,6 +28,6 @@ public class ProductController {
     /** 인기 상품 조회 **/
     @GetMapping("/api/v1/hot-product")
     public ApiResponse<List<HotProductDTO>> getHotProducts() {
-        return ApiResponse.success(productService.getHotProducts());
+        return ApiResponse.success(productFacadeService.getHotProducts());
     }
 }

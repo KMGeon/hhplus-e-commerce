@@ -1,19 +1,17 @@
 package kr.hhplus.be.server.domain.payment;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentServiceTest {
@@ -24,58 +22,47 @@ class PaymentServiceTest {
     @InjectMocks
     private PaymentService paymentService;
 
-    private Long orderId;
-    private Long userId;
-    private BigDecimal amount;
-
-    @BeforeEach
-    void setUp() {
-        orderId = 1L;
-        userId = 1L;
-        amount = new BigDecimal("10000.00");
-    }
-
     @Test
-    @DisplayName("결제가 성공적으로 처리되어야 한다")
-    void processPayment_Success() {
+    void 결제_성공_처리시_결제상태가_완료됨() {
         // given
-        PaymentEntity mockPayment = mock(PaymentEntity.class);
-        when(paymentRepository.save(any(PaymentEntity.class))).thenReturn(mockPayment);
+        Long orderId = 1L;
+        Long userId = 100L;
+        BigDecimal amount = BigDecimal.valueOf(10000);
+        boolean isSuccess = true;
 
         // when
-        paymentService.processPayment(orderId, userId, amount);
+        paymentService.paymentProcessByBoolean(orderId, userId, amount, isSuccess);
 
         // then
-        verify(paymentRepository, times(1)).save(any(PaymentEntity.class));
-    }
+        ArgumentCaptor<PaymentEntity> paymentCaptor = ArgumentCaptor.forClass(PaymentEntity.class);
+        verify(paymentRepository, times(1)).save(paymentCaptor.capture());
 
-
-    @Test
-    @DisplayName("결제 엔티티가 올바르게 생성되어야 한다")
-    void createPayment_Success() {
-        // when
-        PaymentEntity payment = paymentService.createPayment(orderId, userId, amount);
-
-        // then
-        assertNotNull(payment);
-        assertEquals(orderId, payment.getOrderId());
-        assertEquals(userId, payment.getUserId());
-        assertEquals(amount, payment.getAmount());
+        PaymentEntity capturedPayment = paymentCaptor.getValue();
+        assertThat(capturedPayment.getOrderId()).isEqualTo(orderId);
+        assertThat(capturedPayment.getUserId()).isEqualTo(userId);
+        assertThat(capturedPayment.getAmount()).isEqualTo(amount);
+        assertThat(capturedPayment.getStatus()).isEqualTo(PaymentStatus.COMPLETED);
     }
 
     @Test
-    @DisplayName("실패한 결제가 올바르게 저장되어야 한다")
-    void failPayment_Success() {
+    void 결제_실패_처리시_결제상태가_실패됨() {
         // given
-        String errorMessage = "결제 실패";
-        PaymentEntity mockPayment = mock(PaymentEntity.class);
-        when(paymentRepository.save(any(PaymentEntity.class))).thenReturn(mockPayment);
+        Long orderId = 1L;
+        Long userId = 100L;
+        BigDecimal amount = BigDecimal.valueOf(10000);
+        boolean isSuccess = false;
 
         // when
-        PaymentEntity result = paymentService.failPayment(orderId, userId, amount, errorMessage);
+        paymentService.paymentProcessByBoolean(orderId, userId, amount, isSuccess);
 
         // then
-        assertNotNull(result);
-        verify(paymentRepository, times(1)).save(any(PaymentEntity.class));
+        ArgumentCaptor<PaymentEntity> paymentCaptor = ArgumentCaptor.forClass(PaymentEntity.class);
+        verify(paymentRepository, times(1)).save(paymentCaptor.capture());
+
+        PaymentEntity capturedPayment = paymentCaptor.getValue();
+        assertThat(capturedPayment.getOrderId()).isEqualTo(orderId);
+        assertThat(capturedPayment.getUserId()).isEqualTo(userId);
+        assertThat(capturedPayment.getAmount()).isEqualTo(amount);
+        assertThat(capturedPayment.getStatus()).isEqualTo(PaymentStatus.FAILED);
     }
 }
