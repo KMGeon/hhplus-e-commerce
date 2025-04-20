@@ -8,9 +8,9 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class PaymentRepositoryImpl implements PaymentRepository {
-    private final PaymentJpaFakeRepository paymentJpaFakeRepository;
+    private final PaymentJpaRepository repository;
     @Override
     public PaymentEntity save(PaymentEntity payment) {
-        return paymentJpaFakeRepository.save(payment);
+        return repository.save(payment);
     }
 }
