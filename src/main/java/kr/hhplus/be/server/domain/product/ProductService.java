@@ -25,7 +25,7 @@ public class ProductService {
 
     public void checkProductSkuIds(OrderCriteria.Item... items) {
         List<String> skuIds = Arrays.stream(items)
-                .map(item -> item.skuId())
+                .map(OrderCriteria.Item::skuId)
                 .toList();
         long count = productRepository.countBySkuIdIn(skuIds);
         if (count != skuIds.size()) throw new RuntimeException("잘못된 SKU ID가 포함되어 있습니다.");

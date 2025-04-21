@@ -42,12 +42,6 @@ public class UserEntity extends BaseTimeEntity {
     public long getPoint() {
         return this.point.getAmount();
     }
-
-    private void validatePointAvailable(BigDecimal amount) {
-        if (this.point.getAmount() < amount.longValue()) {
-            throw new IllegalStateException("포인트가 부족합니다.");
-        }
-    }
 }
 
 

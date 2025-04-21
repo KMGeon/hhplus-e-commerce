@@ -39,11 +39,6 @@ public class UserCouponEntity extends BaseTimeEntity {
                 .build();
     }
 
-    public boolean isFirstPublish() {
-        return this == null ? true : false;
-    }
-
-
     public long getCouponId() {
         return this.couponId;
     }

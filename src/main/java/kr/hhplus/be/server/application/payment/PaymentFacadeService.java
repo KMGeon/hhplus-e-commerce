@@ -33,11 +33,11 @@ public class PaymentFacadeService {
         Long userCouponId = criteria.userCouponId();
         try {
             OrderInfo.OrderPaymentInfo orderInfo = orderService.isAvailableOrder(orderId);
-            Long couponId = userCouponService.checkUserCoupon(userCouponId, orderId);
 
             BigDecimal discountAmount = BigDecimal.ZERO;
 
             if (userCouponId != null) {
+                Long couponId = userCouponService.checkUserCoupon(userCouponId, orderId);
                 discountAmount = couponService.calculateDiscountAmount(couponId, orderInfo.totalPrice());
                 userCouponService.useCoupon(userCouponId, orderId);
             }

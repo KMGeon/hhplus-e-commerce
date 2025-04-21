@@ -26,6 +26,5 @@ public class UserService {
     public void usePoint(long userId, BigDecimal finalTotalPrice) {
         UserEntity getUser = userRepository.findById(userId);
         getUser.usePoint(finalTotalPrice.longValue());
-
     }
 }
