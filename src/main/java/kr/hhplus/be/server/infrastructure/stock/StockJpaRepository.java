@@ -12,6 +12,12 @@ import java.util.List;
 
 public interface StockJpaRepository extends JpaRepository<StockEntity, Long> {
 
+    @Query(nativeQuery = true, value= "select get_lock(:key, 5000)")
+    Integer getLock(@Param("key") String key);
+
+    @Query(value = "select release_lock(:key)", nativeQuery = true)
+    void releaseLock(@Param("key") String key);
+
     @Query(nativeQuery = true, value = """
             SELECT a.sku_id AS skuId,
                    COUNT(*) AS ea,
@@ -27,16 +33,17 @@ public interface StockJpaRepository extends JpaRepository<StockEntity, Long> {
 
     @Modifying
     @Query(nativeQuery = true, value = """
-            UPDATE stock s
-            JOIN (
-                SELECT stock_id
-                FROM stock
-                WHERE sku_id = :skuId
-                AND order_id IS NULL
-                ORDER BY created_at ASC
-                LIMIT :quantity
-            ) AS selected ON s.stock_id = selected.stock_id
-            SET s.order_id = :orderId
+                        UPDATE stock s
+                        JOIN (
+                            SELECT stock_id
+                            FROM stock
+                            WHERE sku_id = :skuId
+                            AND order_id IS NULL
+                            ORDER BY created_at ASC
+                            LIMIT :quantity
+                            FOR UPDATE
+                        ) AS selected ON s.stock_id = selected.stock_id
+                        SET s.order_id = :orderId;
             """)
     int updateStockDecreaseFifo(
             @Param("orderId") long orderId,
