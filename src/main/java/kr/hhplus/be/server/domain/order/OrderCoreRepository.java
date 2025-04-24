@@ -10,4 +10,5 @@ public interface OrderCoreRepository {
     OrderItemEntity save(OrderItemEntity entity);
     OrderEntity findById(Long id);
     List<HotProductDTO> findHotProducts(String startPath, String endPath);
+    long updateExpireOrderStatus();
 }

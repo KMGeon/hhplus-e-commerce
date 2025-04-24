@@ -3,6 +3,7 @@ package kr.hhplus.be.server.infrastructure.order;
 import kr.hhplus.be.server.domain.order.OrderEntity;
 import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,4 +22,14 @@ public interface OrderJpaRepository extends JpaRepository<OrderEntity, Long> {
             """)
     List<HotProductDTO> findHotProducts(@Param("startPath") String startPath,
                                         @Param("endPath") String endPath);
+
+    @Modifying
+    @Query(nativeQuery = true, value = """
+        UPDATE orders
+      SET status = 'CANCELLED',
+          updated_at = NOW()
+      WHERE expire_time < NOW()
+      AND status = 'CONFIRMED'
+        """)
+    long updateExpireOrderStatus();
 }
