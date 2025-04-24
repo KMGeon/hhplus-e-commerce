@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -36,6 +37,7 @@ class UserServiceTest {
     private static final Long NO_SIGNUP_USER = 100L;
     private static final Long TEST_COUPON_ID = 10L;
     private static final Long TEST_ORDER_ID = 1000L;
+
 
     @Test
     @DisplayName("사용자 포인트 조회 성공")
@@ -127,7 +129,7 @@ class UserServiceTest {
         final long point = 5000L;
         UserEntity initialUser = UserEntity.createNewUser();
         UserEntity userEntity = initialUser.chargePoint(point);
-        when(userRepository.findById(EXIST_USER)).thenReturn(userEntity);
+        when(userRepository.findByIdOptimisticLock(EXIST_USER)).thenReturn(userEntity);
 
         // when
         userService.usePoint(EXIST_USER, BigDecimal.valueOf(1000L));

@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.application.order;
 
 
+import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.stock.projection.EnoughStockDTO;
 import kr.hhplus.be.server.infrastructure.stock.StockJpaRepository;
 import org.junit.jupiter.api.Test;
@@ -17,8 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-class OrderFacadeLatchServiceTest {
+
+class OrderFacadeLatchServiceTest extends ApplicationContext {
 
     @Autowired
     private OrderFacadeService orderFacadeService;

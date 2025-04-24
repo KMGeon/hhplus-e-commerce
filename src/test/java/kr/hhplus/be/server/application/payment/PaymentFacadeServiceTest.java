@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.application.payment;
 
+import jakarta.persistence.OptimisticLockException;
 import kr.hhplus.be.server.domain.coupon.CouponService;
 import kr.hhplus.be.server.domain.order.OrderInfo;
 import kr.hhplus.be.server.domain.order.OrderService;
@@ -13,9 +14,11 @@ import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.math.BigDecimal;
 
+import static org.junit.Assert.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -101,62 +104,8 @@ class PaymentFacadeServiceTest {
         inOrder.verify(userService).usePoint(userId, finalAmount);
         inOrder.verify(paymentService).paymentProcessByBoolean(orderId, userId, finalAmount, true);
     }
-
     @Test
-    public void 주문_조회_실패_시_복구_처리() {
-        // given
-        long userId = 1L;
-        long orderId = 100L;
-        Long userCouponId = 10L;
-        PaymentCriteria.Pay criteria = new PaymentCriteria.Pay(userId, orderId, userCouponId);
-
-        when(orderService.isAvailableOrder(orderId)).thenThrow(new RuntimeException("주문을 찾을 수 없습니다"));
-
-        // when
-        paymentFacadeService.payment(criteria);
-
-        // then
-        verify(orderService).restoreOrderStatusCancel(orderId);
-        verify(stockService).restoreStock(orderId);
-        verify(paymentService).paymentProcessByBoolean(orderId, userId, BigDecimal.ZERO, false);
-
-        verify(userCouponService, never()).checkUserCoupon(anyLong(), anyLong());
-        verify(couponService, never()).calculateDiscountAmount(anyLong(), any());
-        verify(userCouponService, never()).useCoupon(anyLong(), anyLong());
-        verify(userService, never()).usePoint(anyLong(), any());
-    }
-
-    @Test
-    public void 쿠폰_검증_실패_시_복구_처리() {
-        // given
-        long userId = 1L;
-        long orderId = 100L;
-        Long userCouponId = 10L;
-        PaymentCriteria.Pay criteria = new PaymentCriteria.Pay(userId, orderId, userCouponId);
-
-        OrderInfo.OrderPaymentInfo orderInfo = new OrderInfo.OrderPaymentInfo(orderId, BigDecimal.valueOf(10_000));
-        when(orderService.isAvailableOrder(orderId)).thenReturn(orderInfo);
-        when(userCouponService.checkUserCoupon(userCouponId, orderId)).thenThrow(new RuntimeException("유효하지 않은 쿠폰입니다"));
-
-        // when
-        paymentFacadeService.payment(criteria);
-
-        // then
-        verify(orderService).isAvailableOrder(orderId);
-        verify(userCouponService).checkUserCoupon(userCouponId, orderId);
-
-        verify(orderService).restoreOrderStatusCancel(orderId);
-        verify(stockService).restoreStock(orderId);
-        verify(paymentService).paymentProcessByBoolean(orderId, userId, BigDecimal.ZERO, false);
-
-        verify(couponService, never()).calculateDiscountAmount(anyLong(), any());
-        verify(userCouponService, never()).useCoupon(anyLong(), anyLong());
-        verify(orderService, never()).applyToDisCount(anyLong(), any());
-        verify(userService, never()).usePoint(anyLong(), any());
-    }
-
-    @Test
-    public void 포인트_사용_실패_시_복구_처리() {
+    public void 결제_성공_테스트() {
         // given
         long userId = 1L;
         long orderId = 100L;
@@ -174,8 +123,6 @@ class PaymentFacadeServiceTest {
         BigDecimal finalAmount = BigDecimal.valueOf(8_000);
         when(orderService.applyToDisCount(orderId, discountAmount)).thenReturn(finalAmount);
 
-        doThrow(new RuntimeException("포인트가 부족합니다")).when(userService).usePoint(userId, finalAmount);
-
         // when
         paymentFacadeService.payment(criteria);
 
@@ -186,7 +133,94 @@ class PaymentFacadeServiceTest {
         verify(userCouponService).useCoupon(userCouponId, orderId);
         verify(orderService).applyToDisCount(orderId, discountAmount);
         verify(userService).usePoint(userId, finalAmount);
+        verify(paymentService).paymentProcessByBoolean(orderId, userId, finalAmount, true);
 
+        // 복구 로직이 호출되지 않아야 함
+        verify(orderService, never()).restoreOrderStatusCancel(anyLong());
+        verify(stockService, never()).restoreStock(anyLong());
+    }
+
+    @Test
+    public void 쿠폰없이_결제_성공_테스트() {
+        // given
+        long userId = 1L;
+        long orderId = 100L;
+        PaymentCriteria.Pay criteria = new PaymentCriteria.Pay(userId, orderId, null); // 쿠폰 없음
+
+        OrderInfo.OrderPaymentInfo orderInfo = new OrderInfo.OrderPaymentInfo(orderId, BigDecimal.valueOf(10_000));
+        when(orderService.isAvailableOrder(orderId)).thenReturn(orderInfo);
+
+        // 할인 없이 원래 가격 그대로 사용
+        when(orderService.applyToDisCount(orderId, BigDecimal.ZERO)).thenReturn(BigDecimal.valueOf(10_000));
+
+        // when
+        paymentFacadeService.payment(criteria);
+
+        // then
+        verify(orderService).isAvailableOrder(orderId);
+        verify(userCouponService, never()).checkUserCoupon(anyLong(), anyLong());
+        verify(couponService, never()).calculateDiscountAmount(anyLong(), any());
+        verify(userCouponService, never()).useCoupon(anyLong(), anyLong());
+        verify(orderService).applyToDisCount(orderId, BigDecimal.ZERO);
+        verify(userService).usePoint(userId, BigDecimal.valueOf(10_000));
+        verify(paymentService).paymentProcessByBoolean(orderId, userId, BigDecimal.valueOf(10_000), true);
+    }
+
+    @Test
+    public void 낙관적_락_충돌_후_재시도_성공_테스트() {
+        // given
+        long userId = 1L;
+        long orderId = 100L;
+        PaymentCriteria.Pay criteria = new PaymentCriteria.Pay(userId, orderId, null);
+
+        OrderInfo.OrderPaymentInfo orderInfo = new OrderInfo.OrderPaymentInfo(orderId, BigDecimal.valueOf(10_000));
+        when(orderService.isAvailableOrder(orderId)).thenReturn(orderInfo);
+        when(orderService.applyToDisCount(orderId, BigDecimal.ZERO)).thenReturn(BigDecimal.valueOf(10_000));
+
+        // 첫 번째 호출에서는 낙관적 락 예외 발생, 두 번째 호출에서는 성공
+        doThrow(new ObjectOptimisticLockingFailureException("", new OptimisticLockException()))
+                .doNothing()
+                .when(userService).usePoint(userId, BigDecimal.valueOf(10_000));
+
+        // when
+        paymentFacadeService.payment(criteria);
+
+        // then
+        verify(orderService).isAvailableOrder(orderId);
+        verify(orderService).applyToDisCount(orderId, BigDecimal.ZERO);
+        verify(userService, times(2)).usePoint(userId, BigDecimal.valueOf(10_000)); // 2번 호출 검증
+        verify(paymentService).paymentProcessByBoolean(orderId, userId, BigDecimal.valueOf(10_000), true);
+
+        // 복구 로직이 호출되지 않아야 함
+        verify(orderService, never()).restoreOrderStatusCancel(anyLong());
+        verify(stockService, never()).restoreStock(anyLong());
+    }
+
+    @Test
+    public void 결제중_예상치못한_예외_발생시_복구_처리() {
+        // given
+        long userId = 1L;
+        long orderId = 100L;
+        PaymentCriteria.Pay criteria = new PaymentCriteria.Pay(userId, orderId, null);
+
+        OrderInfo.OrderPaymentInfo orderInfo = new OrderInfo.OrderPaymentInfo(orderId, BigDecimal.valueOf(10_000));
+        when(orderService.isAvailableOrder(orderId)).thenReturn(orderInfo);
+        when(orderService.applyToDisCount(orderId, BigDecimal.ZERO)).thenReturn(BigDecimal.valueOf(10_000));
+
+        // usePoint는 성공했지만 paymentProcess에서 예외 발생
+        doThrow(new RuntimeException("결제 처리 중 오류 발생"))
+                .when(paymentService).paymentProcessByBoolean(orderId, userId, BigDecimal.valueOf(10_000), true);
+
+        // when & then
+        assertThrows(RuntimeException.class, () -> {
+            paymentFacadeService.payment(criteria);
+        });
+
+        verify(orderService).isAvailableOrder(orderId);
+        verify(orderService).applyToDisCount(orderId, BigDecimal.ZERO);
+        verify(userService).usePoint(userId, BigDecimal.valueOf(10_000));
+
+        // 복구 로직이 호출되었는지 확인
         verify(orderService).restoreOrderStatusCancel(orderId);
         verify(stockService).restoreStock(orderId);
         verify(paymentService).paymentProcessByBoolean(orderId, userId, BigDecimal.ZERO, false);

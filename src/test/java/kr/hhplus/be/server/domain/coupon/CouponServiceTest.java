@@ -60,7 +60,8 @@ class CouponServiceTest {
         CouponEntity coupon = spy(CouponEntity.createCoupon(
                 "테스트 쿠폰", "FIXED_AMOUNT", 100, 5000, LocalDateTime.now()));
 
-        when(couponRepository.findCouponById(couponId)).thenReturn(coupon);
+        when(couponRepository.findCouponById(couponId))
+                .thenReturn(coupon);
         doNothing().when(coupon).validateForPublish();
 
         // when

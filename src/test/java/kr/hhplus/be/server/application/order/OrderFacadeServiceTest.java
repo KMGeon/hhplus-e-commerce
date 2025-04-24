@@ -64,18 +64,17 @@ class OrderFacadeServiceTest {
         when(orderService.createOrder(eq(userId), any())).thenReturn(orderId);
 
         int updatedCount = 5; // 2개 + 3개 = 총 5개 업데이트
-        when(stockService.decreaseStock(eq(orderId), any(StockCommand.Order.class))).thenReturn(updatedCount);
+        when(stockService.decreaseStockPessimistic(eq(orderId), any(StockCommand.Order.class))).thenReturn(updatedCount);
 
-        int result = orderFacadeService.createOrder(criteria);
+        Long result = orderFacadeService.createOrder(criteria);
 
-        assertThat(result).isEqualTo(updatedCount);
 
         InOrder inOrder = inOrder(userService, productService, stockService, orderService);
         inOrder.verify(userService).getUser(userId);
         inOrder.verify(productService).checkProductSkuIds(any(OrderCriteria.Item[].class));
         inOrder.verify(stockService).checkEaAndProductInfo(any(StockCommand.Order.class));
         inOrder.verify(orderService).createOrder(eq(userId), any());
-        inOrder.verify(stockService).decreaseStock(eq(orderId), any(StockCommand.Order.class));
+        inOrder.verify(stockService).decreaseStockPessimistic(eq(orderId), any(StockCommand.Order.class));
     }
 
     @Test

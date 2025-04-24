@@ -56,9 +56,7 @@ class OrderServiceTest {
         Long orderId = 100L;
         OrderEntity mockOrder = mock(OrderEntity.class);
         when(mockOrder.getId()).thenReturn(orderId);
-        when(mockOrder.getUserId()).thenReturn(1L);
         when(mockOrder.getTotalPrice()).thenReturn(BigDecimal.valueOf(5000));
-        when(mockOrder.getFinalAmount()).thenReturn(BigDecimal.valueOf(5000));
 
         when(orderCoreRepository.findById(orderId)).thenReturn(mockOrder);
 
