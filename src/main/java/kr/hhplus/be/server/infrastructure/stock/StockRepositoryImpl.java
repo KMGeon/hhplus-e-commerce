@@ -28,4 +28,14 @@ public class StockRepositoryImpl implements StockRepository {
     public void restoreStockByOrderId(Long orderId) {
         repository.restoreStockByOrderId(orderId);
     }
+
+    @Override
+    public Integer getLock(String key) {
+        return repository.getLock(key);
+    }
+
+    @Override
+    public void releaseLock(String key) {
+        repository.releaseLock(key);
+    }
 }
