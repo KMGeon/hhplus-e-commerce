@@ -25,7 +25,7 @@ public class OrderFacadeService {
     private final StockService stockService;
 
     @Transactional
-    public int createOrder(OrderCriteria.Order criteria) {
+    public Long createOrder(OrderCriteria.Order criteria) {
         UserInfo.User getUser = userService.getUser(criteria.userId());
 
         OrderCriteria.Item[] items = OrderCriteria.Item.toArray(criteria.products());
@@ -33,9 +33,9 @@ public class OrderFacadeService {
 
         StockCommand.Order stockCommand = criteria.toStockCommand();
         List<StockInfo.Stock> getStocks = stockService.checkEaAndProductInfo(stockCommand);
+        Long createOrderId = orderService.createOrder(getUser.userId(), toOrderCommand(getStocks, stockCommand));
 
-        Long createOrderId = orderService.createOrder(getUser.userId(), toOrderCommand(getStocks));
-
-        return stockService.decreaseStock(createOrderId, stockCommand);
+         stockService.decreaseStockPessimistic(createOrderId, stockCommand);
+         return createOrderId;
     }
 }
