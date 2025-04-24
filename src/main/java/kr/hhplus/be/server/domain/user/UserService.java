@@ -1,11 +1,15 @@
 package kr.hhplus.be.server.domain.user;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
@@ -23,8 +27,9 @@ public class UserService {
         return UserInfo.User.from(rtn);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void usePoint(long userId, BigDecimal finalTotalPrice) {
-        UserEntity getUser = userRepository.findById(userId);
+        UserEntity getUser = userRepository.findByIdOptimisticLock(userId);
         getUser.usePoint(finalTotalPrice.longValue());
     }
 }

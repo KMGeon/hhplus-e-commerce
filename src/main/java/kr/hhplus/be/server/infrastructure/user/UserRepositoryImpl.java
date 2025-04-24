@@ -19,6 +19,12 @@ public class UserRepositoryImpl  implements UserRepository {
     }
 
     @Override
+    public UserEntity findByIdOptimisticLock(Long userId) {
+        return userJpaRepository.findByIdOptimisticLock(userId)
+                .orElseThrow(()-> new IllegalArgumentException(String.format("회원을 찾을 수 없습니다. id: %s", userId)));
+    }
+
+    @Override
     public UserEntity save(UserEntity user) {
         return userJpaRepository.save(user);
     }

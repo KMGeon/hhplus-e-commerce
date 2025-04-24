@@ -4,5 +4,6 @@ import java.util.Optional;
 
 public interface UserRepository {
     UserEntity findById(Long userId);
+    UserEntity findByIdOptimisticLock(Long userId);
     UserEntity save(UserEntity user);
 }

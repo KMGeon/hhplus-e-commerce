@@ -21,6 +21,9 @@ public class UserEntity extends BaseTimeEntity {
     @Embedded
     private Point point;
 
+    @Version
+    private Long version;
+
 
     public static UserEntity createNewUser() {
         UserEntity user = new UserEntity();
