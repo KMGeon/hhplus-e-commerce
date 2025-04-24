@@ -32,4 +32,13 @@ public enum CategoryEnum {
             throw new IllegalArgumentException("카테고리 Enum이 null입니다.");
         return categoryEnum.getCategoryCode();
     }
+
+    public static CategoryEnum fromCategoryCode(String categoryCode) {
+        if (categoryCode == null || categoryCode.isEmpty()) {
+            throw new IllegalArgumentException("카테고리 코드가 null이거나 비어있습니다.");
+        }
+        
+        return validateCategoryCode(categoryCode)
+                .orElseThrow(() -> new IllegalArgumentException("일치하는 카테고리가 없습니다: " + categoryCode));
+    }
 }

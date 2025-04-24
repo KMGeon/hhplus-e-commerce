@@ -19,4 +19,10 @@ public class CouponFacadeService {
         couponService.decreaseCouponQuantityAfterCheck(criteria.couponId());
         return userCouponService.publishOnlyIfFirstTime(criteria);
     }
+
+    @Transactional
+    public long publishCouponPessimistic(CouponCriteria.PublishCriteria criteria) {
+        couponService.decreaseCouponQuantityAfterCheckPessimistic(criteria.couponId());
+        return userCouponService.publishOnlyIfFirstTime(criteria);
+    }
 }

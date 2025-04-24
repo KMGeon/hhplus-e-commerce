@@ -93,4 +93,17 @@ public class CouponEntity extends BaseTimeEntity {
         this.discountAmount = discountAmount;
         this.expireTime = expireTime;
     }
+
+    @Override
+    public String toString() {
+        return "CouponEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", discountType=" + discountType +
+                ", initQuantity=" + initQuantity +
+                ", remainQuantity=" + remainQuantity +
+                ", discountAmount=" + discountAmount +
+                ", expireTime=" + expireTime +
+                "} " + super.toString();
+    }
 }

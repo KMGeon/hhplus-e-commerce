@@ -31,6 +31,12 @@ public class CouponService {
         coupon.decreaseQuantity();
     }
 
+    public void decreaseCouponQuantityAfterCheckPessimistic(long couponId) {
+        CouponEntity coupon = couponRepository.findCouponByIdWithPessimisticLock(couponId);
+        coupon.validateForPublish();
+        coupon.decreaseQuantity();
+    }
+
     public BigDecimal calculateDiscountAmount(Long couponId, BigDecimal totalPrice) {
         return couponRepository.findCouponById(couponId)
                 .calculateDiscountAmount(totalPrice);

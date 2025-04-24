@@ -16,9 +16,17 @@ public class CouponRepositoryImpl implements CouponRepository {
         return couponJpaRepository.save(coupon);
     }
 
+
+
     @Override
     public CouponEntity findCouponById(Long id) {
         return couponJpaRepository.findById(id)
+                .orElseThrow(()-> new IllegalArgumentException(String.format("쿠폰이 존재하지 않습니다. id: %s", id)));
+    }
+
+    @Override
+    public CouponEntity findCouponByIdWithPessimisticLock(Long id) {
+        return couponJpaRepository.findCouponByIdWithPessimisticLock(id)
                 .orElseThrow(()-> new IllegalArgumentException(String.format("쿠폰이 존재하지 않습니다. id: %s", id)));
     }
 }

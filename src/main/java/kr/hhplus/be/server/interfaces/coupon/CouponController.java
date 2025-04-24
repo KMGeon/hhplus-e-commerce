@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class CouponController {
+public class CouponController implements CouponControllerDocs {
 
     private final CouponService couponService;
     private final CouponFacadeService couponFacadeService;
