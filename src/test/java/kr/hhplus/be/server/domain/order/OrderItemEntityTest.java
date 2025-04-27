@@ -11,54 +11,40 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.instancio.Select.field;
 
-@ExtendWith(MockitoExtension.class)
 class OrderItemEntityTest {
 
     @Test
-    @DisplayName("ProductEntity로부터 OrderItemEntity를 생성할 수 있다")
-    void createOrderItem() {
+    void 주문_상품_생성_성공() {
         // given
-        ProductEntity product = Instancio.of(ProductEntity.class)
-                .set(field("skuId"), "SKU-12345")
-                .set(field("unitPrice"), 10000L)
-                .set(field("category"), CategoryEnum.APPLE)
-                .create();
-
-        Long quantity = 3L;
+        String skuId = "SKU001";
+        Long ea = 3L;
+        Long unitPrice = 10000L;
 
         // when
-        OrderItemEntity orderItem = OrderItemEntity.createOrderItem(product, quantity);
+        OrderItemEntity orderItem = OrderItemEntity.createOrderItem(skuId, ea, unitPrice);
 
         // then
-        assertThat(orderItem.getSkuId()).isEqualTo(product.getSkuId());
-        assertThat(orderItem.getEa()).isEqualTo(quantity);
-        assertThat(orderItem.getUnitPrice()).isEqualTo(product.getUnitPrice());
+        assertThat(orderItem.getSkuId()).isEqualTo(skuId);
+        assertThat(orderItem.getEa()).isEqualTo(ea);
+        assertThat(orderItem.getUnitPrice()).isEqualTo(unitPrice);
     }
 
     @Test
-    @DisplayName("총 금액을 계산할 수 있다")
-    void getTotalPrice() {
+    void 주문_상품_총_가격_계산_성공() {
         // given
-        OrderItemEntity orderItem = Instancio.of(OrderItemEntity.class)
-                .set(field("unitPrice"), 5000L)
-                .set(field("ea"), 2L)
-                .create();
+        OrderItemEntity orderItem = OrderItemEntity.createOrderItem("SKU001", 3L, 10000L);
 
         // when
         long totalPrice = orderItem.getTotalPrice();
 
         // then
-        assertThat(totalPrice).isEqualTo(10000L); // 5000 * 2 = 10000
+        assertThat(totalPrice).isEqualTo(30000L); // 3 * 10000 = 30000
     }
 
     @Test
-    @DisplayName("수량이 0인 경우 총 금액은 0이다")
-    void getTotalPrice_zeroQuantity() {
+    void 주문_상품_수량_0인_경우_총_가격_0() {
         // given
-        OrderItemEntity orderItem = Instancio.of(OrderItemEntity.class)
-                .set(field("unitPrice"), 5000L)
-                .set(field("ea"), 0L)
-                .create();
+        OrderItemEntity orderItem = OrderItemEntity.createOrderItem("SKU001", 0L, 10000L);
 
         // when
         long totalPrice = orderItem.getTotalPrice();
@@ -68,18 +54,51 @@ class OrderItemEntityTest {
     }
 
     @Test
-    @DisplayName("가격이 0인 경우 총 금액은 0이다")
-    void getTotalPrice_zeroPrice() {
+    void 주문_상품_단가_0인_경우_총_가격_0() {
         // given
-        OrderItemEntity orderItem = Instancio.of(OrderItemEntity.class)
-                .set(field("unitPrice"), 0L)
-                .set(field("ea"), 5L)
-                .create();
+        OrderItemEntity orderItem = OrderItemEntity.createOrderItem("SKU001", 5L, 0L);
 
         // when
         long totalPrice = orderItem.getTotalPrice();
 
         // then
         assertThat(totalPrice).isEqualTo(0L);
+    }
+
+    @Test
+    void 빌더패턴으로_주문_상품_생성_성공() {
+        // given
+        String skuId = "SKU002";
+        Long ea = 2L;
+        Long unitPrice = 5000L;
+
+        // when
+        OrderItemEntity orderItem = OrderItemEntity.builder()
+                .skuId(skuId)
+                .ea(ea)
+                .unitPrice(unitPrice)
+                .build();
+
+        // then
+        assertThat(orderItem.getSkuId()).isEqualTo(skuId);
+        assertThat(orderItem.getEa()).isEqualTo(ea);
+        assertThat(orderItem.getUnitPrice()).isEqualTo(unitPrice);
+        assertThat(orderItem.getTotalPrice()).isEqualTo(10000L); // 2 * 5000 = 10000
+    }
+
+    @Test
+    void 동일_주문_상품_여러_개_생성() {
+        // given
+        String skuId = "SKU003";
+
+        // when
+        OrderItemEntity item1 = OrderItemEntity.createOrderItem(skuId, 1L, 1000L);
+        OrderItemEntity item2 = OrderItemEntity.createOrderItem(skuId, 2L, 1000L);
+
+        // then
+        assertThat(item1.getSkuId()).isEqualTo(item2.getSkuId());
+        assertThat(item1.getEa()).isNotEqualTo(item2.getEa());
+        assertThat(item1.getTotalPrice()).isEqualTo(1000L);
+        assertThat(item2.getTotalPrice()).isEqualTo(2000L);
     }
 }

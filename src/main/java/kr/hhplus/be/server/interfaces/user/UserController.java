@@ -2,30 +2,30 @@ package kr.hhplus.be.server.interfaces.user;
 
 import jakarta.validation.Valid;
 import kr.hhplus.be.server.domain.user.UserCommand;
+import kr.hhplus.be.server.domain.user.UserInfo;
 import kr.hhplus.be.server.domain.user.UserService;
 import kr.hhplus.be.server.support.ApiResponse;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/user")
-public class UserController {
+public class UserController implements UserControllerDocs {
 
 
     private final UserService userService;
-
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
 
     /**
      * @param userId
      * @return 유저의 포인트를 반환합니다.
      */
     @GetMapping("/point")
-    public ApiResponse<Long> getUserPoint(
+    public ApiResponse<UserResponse.User> getUserPoint(
             @RequestParam(required = true, value = "userId") Long userId
     ) {
-        return ApiResponse.success(userService.getUserPoint(userId));
+        UserInfo.User user = userService.getUser(userId);
+        return ApiResponse.success(UserResponse.User.toResponse(user));
     }
 
     /**
@@ -33,11 +33,11 @@ public class UserController {
      * @return 유저의 포인트를 충전합니다.
      */
     @PostMapping("/point")
-    public ApiResponse<Integer> chargeUserPoint(
+    public ApiResponse<UserResponse.User> chargeUserPoint(
             @Valid @RequestBody UserRequest.ChargeUserPointRequest chargeUserPointRequest
     ) {
         UserCommand.PointCharge pointCommand = chargeUserPointRequest.toPointCommand();
-        return ApiResponse.maskToInteger(userService.charge(pointCommand));
+        UserInfo.User chargedUser = userService.charge(pointCommand);
+        return ApiResponse.success(UserResponse.User.toResponse(chargedUser));
     }
-
 }

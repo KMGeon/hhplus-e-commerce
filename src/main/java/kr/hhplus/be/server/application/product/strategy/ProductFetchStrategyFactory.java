@@ -13,7 +13,6 @@ public class ProductFetchStrategyFactory {
     private final FetchProductByCategoryStrategy categoryStrategy;
 
     public ProductFetchStrategy getStrategy(String categoryCode) {
-        System.out.println("categoryCode = " + categoryCode);
         return CategoryEnum.validateCategoryCode(categoryCode)
                 .map(category -> {
                     categoryStrategy.setCategory(category.getCategoryCode());

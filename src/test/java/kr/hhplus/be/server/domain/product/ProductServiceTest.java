@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.domain.product;
 
+import kr.hhplus.be.server.application.order.OrderCriteria;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import kr.hhplus.be.server.domain.stock.StockRepository;
 import org.junit.jupiter.api.Test;
@@ -12,29 +13,27 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ProductServiceTest {
 
-    @InjectMocks
-    private ProductService productService;
-
     @Mock
     private ProductRepository productRepository;
 
-    @Mock
-    private StockRepository stockRepository;
+    @InjectMocks
+    private ProductService productService;
 
     @Test
-    void 카테고리별_상품조회_성공() {
+    void 카테고리별_상품목록_조회() {
         // given
-        String categoryCode = "APPLE";
+        String categoryCode = "FOOD";
         List<ProductStockDTO> expectedProducts = Arrays.asList(
-                createMockProductStockDTO("AP-IP15-PRO", "iPhone 15 Pro", 10),
-                createMockProductStockDTO("AP-MB-AIR-M2", "MacBook Air M2", 5)
+                createProductStockDTO(1L, "제품1", "FOOD", "SKU001", 1000L, 10L),
+                createProductStockDTO(2L, "제품2", "FOOD", "SKU002", 2000L, 20L)
         );
 
         when(productRepository.getProductsWithStockInfoByCategory(categoryCode)).thenReturn(expectedProducts);
@@ -43,33 +42,18 @@ class ProductServiceTest {
         List<ProductStockDTO> result = productService.getProductByCategoryCode(categoryCode);
 
         // then
-        assertEquals(expectedProducts.size(), result.size());
-        assertEquals(expectedProducts, result);
-        verify(productRepository).getProductsWithStockInfoByCategory(categoryCode);
+        assertThat(result).hasSize(2);
+        assertThat(result).isEqualTo(expectedProducts);
+        verify(productRepository, times(1)).getProductsWithStockInfoByCategory(categoryCode);
     }
 
     @Test
-    void 카테고리별_상품조회_빈결과() {
-        // given
-        String nonExistentCategory = "NONEXISTENT";
-        when(productRepository.getProductsWithStockInfoByCategory(nonExistentCategory))
-                .thenReturn(Collections.emptyList());
-
-        // when
-        List<ProductStockDTO> result = productService.getProductByCategoryCode(nonExistentCategory);
-
-        // then
-        assertTrue(result.isEmpty());
-        verify(productRepository).getProductsWithStockInfoByCategory(nonExistentCategory);
-    }
-
-    @Test
-    void 전체_상품조회_성공() {
+    void 전체_상품목록_조회() {
         // given
         List<ProductStockDTO> expectedProducts = Arrays.asList(
-                createMockProductStockDTO("AP-IP15-PRO", "iPhone 15 Pro", 10),
-                createMockProductStockDTO("SM-S24-ULTRA", "Galaxy S24 Ultra", 15),
-                createMockProductStockDTO("LG-GRAM-17", "LG Gram 17", 6)
+                createProductStockDTO(1L, "제품1", "FOOD", "SKU001", 1000L, 10L),
+                createProductStockDTO(2L, "제품2", "FOOD", "SKU002", 2000L, 20L),
+                createProductStockDTO(3L, "제품3", "DRINK", "SKU003", 3000L, 30L)
         );
 
         when(productRepository.getProductsWithStockInfo()).thenReturn(expectedProducts);
@@ -78,64 +62,50 @@ class ProductServiceTest {
         List<ProductStockDTO> result = productService.getAllProduct();
 
         // then
-        assertEquals(expectedProducts.size(), result.size());
-        assertEquals(expectedProducts, result);
-        verify(productRepository).getProductsWithStockInfo();
+        assertThat(result).hasSize(3);
+        assertThat(result).isEqualTo(expectedProducts);
+        verify(productRepository, times(1)).getProductsWithStockInfo();
     }
 
     @Test
-    void 전체_상품조회_빈결과() {
+    void 유효한_SKU_ID_검증_성공() {
         // given
-        when(productRepository.getProductsWithStockInfo()).thenReturn(Collections.emptyList());
+        OrderCriteria.Item item1 = new OrderCriteria.Item("SKU001", 1);
+        OrderCriteria.Item item2 = new OrderCriteria.Item("SKU002", 2);
+
+        when(productRepository.countBySkuIdIn(Arrays.asList("SKU001", "SKU002"))).thenReturn(2L);
 
         // when
-        List<ProductStockDTO> result = productService.getAllProduct();
+        productService.checkProductSkuIds(item1, item2);
 
         // then
-        assertTrue(result.isEmpty());
-        verify(productRepository).getProductsWithStockInfo();
+        verify(productRepository, times(1)).countBySkuIdIn(Arrays.asList("SKU001", "SKU002"));
     }
 
     @Test
-    void SKUID_검증_성공() {
+    void 유효하지_않은_SKU_ID_검증_실패() {
         // given
-        List<String> validSkuIds = Arrays.asList("SKU001", "SKU002", "SKU003");
-        when(productRepository.countBySkuIdIn(validSkuIds)).thenReturn((long) validSkuIds.size());
+        OrderCriteria.Item item1 = new OrderCriteria.Item("SKU001", 1);
+        OrderCriteria.Item item2 = new OrderCriteria.Item("INVALID_SKU", 2);
+
+        when(productRepository.countBySkuIdIn(Arrays.asList("SKU001", "INVALID_SKU"))).thenReturn(1L);
 
         // when
-        productService.validateAllSkuIds(validSkuIds);
+// then
+        assertThatThrownBy(() -> productService.checkProductSkuIds(item1, item2))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("잘못된 SKU ID가 포함되어 있습니다");
 
-        // then
-        verify(productRepository).countBySkuIdIn(validSkuIds);
+        verify(productRepository, times(1)).countBySkuIdIn(Arrays.asList("SKU001", "INVALID_SKU"));
     }
 
-    @Test
-    void SKUID_검증_실패() {
-        // given
-        List<String> skuIds = Arrays.asList("SKU001", "SKU002", "INVALID_SKU");
-        when(productRepository.countBySkuIdIn(skuIds)).thenReturn(2L); // 3개 중 2개만 존재
-
-        // when
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                productService.validateAllSkuIds(skuIds));
-
-        // then
-        assertEquals("잘못된 SKU ID가 포함되어 있습니다.", exception.getMessage());
-        verify(productRepository).countBySkuIdIn(skuIds);
-    }
-
-
-
-    private ProductStockDTO createMockProductStockDTO(String skuId, String productName, long ea) {
+    private ProductStockDTO createProductStockDTO(Long productId, String productName,
+                                                  String category, String skuId,
+                                                  Long unitPrice, Long stockEa) {
         return new ProductStockDTO() {
             @Override
             public Long getProductId() {
-                return 1L;
-            }
-
-            @Override
-            public String getSkuId() {
-                return skuId;
+                return productId;
             }
 
             @Override
@@ -145,17 +115,35 @@ class ProductServiceTest {
 
             @Override
             public String getCategory() {
-                return skuId.substring(0, 2);
+                return category;
+            }
+
+            @Override
+            public String getSkuId() {
+                return skuId;
             }
 
             @Override
             public Long getUnitPrice() {
-                return 1000L;
+                return unitPrice;
             }
 
             @Override
             public Long getStockEa() {
-                return ea;
+                return stockEa;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) return true;
+                if (o == null || getClass() != o.getClass()) return false;
+                ProductStockDTO that = (ProductStockDTO) o;
+                return getProductId().equals(that.getProductId()) &&
+                        getProductName().equals(that.getProductName()) &&
+                        getCategory().equals(that.getCategory()) &&
+                        getSkuId().equals(that.getSkuId()) &&
+                        getUnitPrice().equals(that.getUnitPrice()) &&
+                        getStockEa().equals(that.getStockEa());
             }
         };
     }

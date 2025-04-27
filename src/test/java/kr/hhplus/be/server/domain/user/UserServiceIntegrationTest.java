@@ -9,13 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class UserServiceIntegrationTest extends ApplicationContext {
 
+    private Long userId = 0L;
+
     @Nested
     class 포인트_충전 {
 
         @BeforeEach
         public void setUp() {
             UserEntity newUser = UserEntity.createNewUser();
-            userJpaRepository.save(newUser);
+            userId = userJpaRepository.save(newUser).getId();
         }
 
         @AfterEach
@@ -30,11 +32,11 @@ class UserServiceIntegrationTest extends ApplicationContext {
                 """)
         public void 포인트_충전() throws Exception {
             // given
-            UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(EXIST_USER, 1000L);
+            UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(userId, 1000L);
 
             // when
-            UserInfo.UserChargeInfo charge = userService.charge(pointCharge);
-            UserEntity getUser = userJpaRepository.findById(EXIST_USER).orElseThrow();
+            UserInfo.User charge = userService.charge(pointCharge);
+            UserEntity getUser = userJpaRepository.findById(userId).orElseThrow();
 
             // then
             assertEquals(charge.amount(),getUser.getPoint());
@@ -48,7 +50,7 @@ class UserServiceIntegrationTest extends ApplicationContext {
                 """)
         public void 포인트_충전_실패_0원() throws Exception{
             // given
-            UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(EXIST_USER, 0L);
+            UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(userId, 0L);
 
             // when
             // then
@@ -65,7 +67,7 @@ class UserServiceIntegrationTest extends ApplicationContext {
                 """)
         public void 포인트_충전_실패_음수() throws Exception{
             // given
-            UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(EXIST_USER, -1000L);
+            UserCommand.PointCharge pointCharge = new UserCommand.PointCharge(userId, -1000L);
 
             // when
             // then

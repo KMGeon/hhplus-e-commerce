@@ -2,6 +2,7 @@ package kr.hhplus.be.server.application.product;
 
 import kr.hhplus.be.server.application.product.strategy.ProductFetchStrategy;
 import kr.hhplus.be.server.application.product.strategy.ProductFetchStrategyFactory;
+import kr.hhplus.be.server.domain.order.OrderService;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,13 +24,16 @@ class ProductFacadeServiceTest {
     private ProductFetchStrategyFactory strategyFactory;
 
     @Mock
+    private OrderService orderService;
+
+    @Mock
     private ProductFetchStrategy productFetchStrategy;
 
     private ProductFacadeService productFacadeService;
 
     @BeforeEach
     void setUp() {
-        productFacadeService = new ProductFacadeService(strategyFactory);
+        productFacadeService = new ProductFacadeService(strategyFactory, orderService);
     }
 
     @Test
@@ -78,8 +82,8 @@ class ProductFacadeServiceTest {
         verify(productFetchStrategy).fetch();
     }
 
-    private ProductStockDTO createProductStockDTO(Long productId, String productName, String category, 
-                                                String skuId, Long unitPrice, Long stockEa) {
+    private ProductStockDTO createProductStockDTO(Long productId, String productName, String category,
+                                                  String skuId, Long unitPrice, Long stockEa) {
         return new ProductStockDTO() {
             @Override
             public Long getProductId() {

@@ -5,8 +5,6 @@ import kr.hhplus.be.server.domain.coupon.CouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
-
 @Component
 @RequiredArgsConstructor
 public class CouponRepositoryImpl implements CouponRepository {
@@ -18,8 +16,17 @@ public class CouponRepositoryImpl implements CouponRepository {
         return couponJpaRepository.save(coupon);
     }
 
+
+
     @Override
-    public Optional<CouponEntity> findById(Long id) {
-        return couponJpaRepository.findById(id);
+    public CouponEntity findCouponById(Long id) {
+        return couponJpaRepository.findById(id)
+                .orElseThrow(()-> new IllegalArgumentException(String.format("쿠폰이 존재하지 않습니다. id: %s", id)));
+    }
+
+    @Override
+    public CouponEntity findCouponByIdWithPessimisticLock(Long id) {
+        return couponJpaRepository.findCouponByIdWithPessimisticLock(id)
+                .orElseThrow(()-> new IllegalArgumentException(String.format("쿠폰이 존재하지 않습니다. id: %s", id)));
     }
 }

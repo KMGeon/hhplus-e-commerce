@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.interfaces.coupon;
 
+import jakarta.validation.constraints.NotNull;
 import kr.hhplus.be.server.application.coupon.CouponCriteria;
 import kr.hhplus.be.server.domain.coupon.CouponCommand;
 
@@ -10,7 +11,7 @@ public class CouponRequest {
         }
     }
 
-    public record Publish(long userId, long couponId) {
+    public record Publish(@NotNull Long userId, @NotNull Long couponId) {
         public  CouponCriteria.PublishCriteria toCriteria() {
             return new CouponCriteria.PublishCriteria(this.userId, this.couponId);
         }

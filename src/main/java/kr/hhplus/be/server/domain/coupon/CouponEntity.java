@@ -72,7 +72,6 @@ public class CouponEntity extends BaseTimeEntity {
         return now.plusDays(10);
     }
 
-
     private void validateQuantity() {
         if (remainQuantity <= 0) {
             throw new RuntimeException("쿠폰이 모두 소진되었습니다.");
@@ -93,5 +92,18 @@ public class CouponEntity extends BaseTimeEntity {
         this.remainQuantity = remainQuantity;
         this.discountAmount = discountAmount;
         this.expireTime = expireTime;
+    }
+
+    @Override
+    public String toString() {
+        return "CouponEntity{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", discountType=" + discountType +
+                ", initQuantity=" + initQuantity +
+                ", remainQuantity=" + remainQuantity +
+                ", discountAmount=" + discountAmount +
+                ", expireTime=" + expireTime +
+                "} " + super.toString();
     }
 }

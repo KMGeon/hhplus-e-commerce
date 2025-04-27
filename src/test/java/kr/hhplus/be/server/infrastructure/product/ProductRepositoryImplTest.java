@@ -9,9 +9,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.context.annotation.Import;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,9 +19,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@Import(ProductRepositoryImpl.class)
+@SpringBootTest
 class ProductRepositoryImplTest {
 
     @Autowired
@@ -219,3 +215,40 @@ class ProductRepositoryImplTest {
         assertThat(count).isEqualTo(2); // 존재하는 SKU ID만 카운트
     }
 }
+
+/**
+ *   products.add(ProductEntity.builder()
+ *                 .productName("iPhone 15 Pro")
+ *                 .category(CategoryEnum.APPLE)
+ *                 .skuId("AP-IP15-PRO")
+ *                 .unitPrice(100L)
+ *                 .build());
+ *
+ *         products.add(ProductEntity.builder()
+ *                 .productName("MacBook Air M2")
+ *                 .category(CategoryEnum.APPLE)
+ *                 .skuId("AP-MB-AIR-M2")
+ *                 .unitPrice(101L)
+ *                 .build());
+ *
+ *         products.add(ProductEntity.builder()
+ *                 .productName("Galaxy S24 Ultra")
+ *                 .category(CategoryEnum.SAMSUNG)
+ *                 .skuId("SM-S24-ULTRA")
+ *                 .unitPrice(102L)
+ *                 .build());
+ *
+ *         products.add(ProductEntity.builder()
+ *                 .productName("Galaxy Tab S9")
+ *                 .category(CategoryEnum.SAMSUNG)
+ *                 .skuId("SM-TAB-S9")
+ *                 .unitPrice(103L)
+ *                 .build());
+ *
+ *         products.add(ProductEntity.builder()
+ *                 .productName("LG Gram 17")
+ *                 .category(CategoryEnum.LG)
+ *                 .skuId("LG-GRAM-17")
+ *                 .unitPrice(104L)
+ *                 .build());
+ */

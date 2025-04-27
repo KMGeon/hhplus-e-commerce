@@ -13,15 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class OrderController {
+public class OrderController implements OrderControllerDocs {
 
     private final OrderFacadeService orderFacadeService;
 
-    /**
-     * 주문 생성
-     */
     @PostMapping("/order")
-    public ApiResponse<Integer> createOrder(
+    public ApiResponse<Long> createOrder(
             @Valid @RequestBody OrderRequestDTO.CreateOrderRequest request
     ) {
         OrderCriteria.Order criteria = request.toCriteria();

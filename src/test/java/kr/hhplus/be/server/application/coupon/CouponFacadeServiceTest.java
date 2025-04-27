@@ -10,40 +10,71 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CouponFacadeServiceTest {
 
     @Mock
-    private CouponService couponService;
-
-    @Mock
-    private UserService userService;
-
-    @Mock
     private UserCouponService userCouponService;
+
+    @Mock
+    private CouponService couponService;
 
     @InjectMocks
     private CouponFacadeService couponFacadeService;
 
     @Test
-    void 쿠폰_파사드_호출_테스트() {
-        // given
-        long userId = 1L;
-        long couponId = 1L;
+    void 쿠폰_발행_성공() {
+        Long userId = 1L;
+        Long couponId = 100L;
         CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, couponId);
-        
-        when(userService.validateUserForCoupon(userId, couponId)).thenReturn(userId);
 
-        // when
-        couponFacadeService.publishCoupon(criteria);
+        when(userCouponService.publishOnlyIfFirstTime(criteria)).thenReturn(userId);
 
-        // then
-        InOrder inOrder = inOrder(userService, couponService, userCouponService);
-        
-        inOrder.verify(userService).validateUserForCoupon(userId, couponId);
-        inOrder.verify(couponService).validateAndDecreaseCoupon(couponId);
-        inOrder.verify(userCouponService).save(userId, couponId);
+        long result = couponFacadeService.publishCoupon(criteria);
+
+        assertThat(result).isEqualTo(userId);
+
+        InOrder inOrder = inOrder(couponService, userCouponService);
+        inOrder.verify(couponService).decreaseCouponQuantityAfterCheck(couponId);
+        inOrder.verify(userCouponService).publishOnlyIfFirstTime(criteria);
     }
-} 
+
+    @Test
+    void 쿠폰_재고_부족_시_예외_발생() {
+        Long userId = 1L;
+        Long couponId = 100L;
+        CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, couponId);
+
+        doThrow(new RuntimeException("쿠폰이 모두 소진되었습니다."))
+                .when(couponService).decreaseCouponQuantityAfterCheck(couponId);
+
+        assertThatThrownBy(() -> couponFacadeService.publishCoupon(criteria))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("쿠폰이 모두 소진되었습니다");
+
+        verify(couponService).decreaseCouponQuantityAfterCheck(couponId);
+        verify(userCouponService, never()).publishOnlyIfFirstTime(any());
+    }
+
+    @Test
+    void 이미_발행된_쿠폰_예외_발생() {
+        Long userId = 1L;
+        Long couponId = 100L;
+        CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, couponId);
+
+        doThrow(new RuntimeException("이미 발행된 쿠폰입니다"))
+                .when(userCouponService).publishOnlyIfFirstTime(criteria);
+
+        assertThatThrownBy(() -> couponFacadeService.publishCoupon(criteria))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("이미 발행된 쿠폰입니다");
+
+        InOrder inOrder = inOrder(couponService, userCouponService);
+        inOrder.verify(couponService).decreaseCouponQuantityAfterCheck(couponId);
+        inOrder.verify(userCouponService).publishOnlyIfFirstTime(criteria);
+    }
+}

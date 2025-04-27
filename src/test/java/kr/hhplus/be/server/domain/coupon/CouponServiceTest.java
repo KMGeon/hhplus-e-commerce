@@ -8,8 +8,11 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -17,111 +20,170 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class CouponServiceTest {
 
-    @InjectMocks
-    private CouponService couponService;
-
     @Mock
     private CouponRepository couponRepository;
+
+    @InjectMocks
+    private CouponService couponService;
 
     @Test
     void 쿠폰_생성_성공() {
         // given
-        String couponName = "신규 가입 쿠폰";
-        CouponDiscountType discountType = CouponDiscountType.FIXED_AMOUNT;
-        long initQuantity = 100L;
-        BigDecimal discountAmount = BigDecimal.valueOf(5000);
-
         CouponCommand.Create command = new CouponCommand.Create(
-                couponName,
-                "FIXED_AMOUNT",
-                initQuantity,
-                1000
+                "테스트 쿠폰", "FIXED_AMOUNT", 100, 5000
         );
 
-        CouponEntity savedCoupon = mock(CouponEntity.class);
-        when(savedCoupon.getId()).thenReturn(1L);
+        CouponEntity savedCoupon = CouponEntity.builder()
+                .id(1L)
+                .name(command.couponName())
+                .discountType(CouponDiscountType.FIXED_AMOUNT)
+                .initQuantity(command.initQuantity())
+                .remainQuantity(command.initQuantity())
+                .discountAmount(command.discountAmount())
+                .expireTime(LocalDateTime.now().plusDays(10))
+                .build();
+
         when(couponRepository.save(any(CouponEntity.class))).thenReturn(savedCoupon);
 
         // when
         CouponInfo.CreateInfo result = couponService.save(command);
 
         // then
-        assertEquals(1L, result.couponId());
-
-        ArgumentCaptor<CouponEntity> couponCaptor = ArgumentCaptor.forClass(CouponEntity.class);
-        verify(couponRepository).save(couponCaptor.capture());
-
-        CouponEntity capturedCoupon = couponCaptor.getValue();
-        assertNotNull(capturedCoupon);
+        assertThat(result.couponId()).isEqualTo(1L);
+        verify(couponRepository, times(1)).save(any(CouponEntity.class));
     }
 
     @Test
-    void 쿠폰_검증_및_수량감소_성공() {
+    void 쿠폰_수량_감소_정상_처리() {
         // given
         long couponId = 1L;
-        CouponEntity coupon = mock(CouponEntity.class);
-        when(couponRepository.findById(couponId)).thenReturn(Optional.of(coupon));
+        CouponEntity coupon = spy(CouponEntity.createCoupon(
+                "테스트 쿠폰", "FIXED_AMOUNT", 100, 5000, LocalDateTime.now()));
 
-        // when
-        couponService.validateAndDecreaseCoupon(couponId);
-
-        // then
-        verify(couponRepository).findById(couponId);
-        verify(coupon).validateForPublish();
-        verify(coupon).decreaseQuantity();
-    }
-
-    @Test
-    void 쿠폰_검증_실패_쿠폰없음() {
-        // given
-        long nonExistentCouponId = 999L;
-        when(couponRepository.findById(nonExistentCouponId)).thenReturn(Optional.empty());
-
-        // when
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                couponService.validateAndDecreaseCoupon(nonExistentCouponId));
-
-        // then
-        assertEquals("쿠폰이 존재하지 않습니다.", exception.getMessage());
-        verify(couponRepository).findById(nonExistentCouponId);
-    }
-
-    @Test
-    void 쿠폰_검증_실패_유효성검증실패() {
-        // given
-        long couponId = 1L;
-        CouponEntity coupon = mock(CouponEntity.class);
-        when(couponRepository.findById(couponId)).thenReturn(Optional.of(coupon));
-        doThrow(new RuntimeException("쿠폰이 유효하지 않습니다.")).when(coupon).validateForPublish();
-
-        // when
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                couponService.validateAndDecreaseCoupon(couponId));
-
-        // then
-        assertEquals("쿠폰이 유효하지 않습니다.", exception.getMessage());
-        verify(couponRepository).findById(couponId);
-        verify(coupon).validateForPublish();
-        verify(coupon, never()).decreaseQuantity();
-    }
-
-    @Test
-    void 쿠폰_수량감소_실패() {
-        // given
-        long couponId = 1L;
-        CouponEntity coupon = mock(CouponEntity.class);
-        when(couponRepository.findById(couponId)).thenReturn(Optional.of(coupon));
+        when(couponRepository.findCouponById(couponId))
+                .thenReturn(coupon);
         doNothing().when(coupon).validateForPublish();
-        doThrow(new RuntimeException("남은 쿠폰이 없습니다.")).when(coupon).decreaseQuantity();
 
         // when
-        Exception exception = assertThrows(RuntimeException.class, () ->
-                couponService.validateAndDecreaseCoupon(couponId));
+        couponService.decreaseCouponQuantityAfterCheck(couponId);
 
         // then
-        assertEquals("남은 쿠폰이 없습니다.", exception.getMessage());
-        verify(couponRepository).findById(couponId);
-        verify(coupon).validateForPublish();
-        verify(coupon).decreaseQuantity();
+        verify(couponRepository, times(1)).findCouponById(couponId);
+        verify(coupon, times(1)).validateForPublish();
+        verify(coupon, times(1)).decreaseQuantity();
+    }
+
+    @Test
+    void 쿠폰_수량_부족_시_예외_발생() {
+        // given
+        long couponId = 1L;
+        CouponEntity coupon = spy(CouponEntity.builder()
+                .name("테스트 쿠폰")
+                .discountType(CouponDiscountType.FIXED_AMOUNT)
+                .initQuantity(100)
+                .remainQuantity(0) // 남은 수량 0
+                .discountAmount(5000)
+                .expireTime(LocalDateTime.now().plusDays(10))
+                .build());
+
+        when(couponRepository.findCouponById(couponId)).thenReturn(coupon);
+        doThrow(new RuntimeException("쿠폰이 모두 소진되었습니다.")).when(coupon).validateForPublish();
+
+        // when
+// then
+        assertThatThrownBy(() -> couponService.decreaseCouponQuantityAfterCheck(couponId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("쿠폰이 모두 소진되었습니다");
+
+        verify(couponRepository, times(1)).findCouponById(couponId);
+        verify(coupon, times(1)).validateForPublish();
+        verify(coupon, never()).decreaseQuantity(); // 예외 발생으로 호출되지 않음
+    }
+
+    @Test
+    void 쿠폰_만료_시_예외_발생() {
+        // given
+        long couponId = 1L;
+        CouponEntity coupon = spy(CouponEntity.builder()
+                .name("테스트 쿠폰")
+                .discountType(CouponDiscountType.FIXED_AMOUNT)
+                .initQuantity(100)
+                .remainQuantity(50)
+                .discountAmount(5000)
+                .expireTime(LocalDateTime.now().minusDays(1)) // 만료된 쿠폰
+                .build());
+
+        when(couponRepository.findCouponById(couponId)).thenReturn(coupon);
+        doThrow(new RuntimeException("만료된 쿠폰입니다.")).when(coupon).validateForPublish();
+
+        // when
+// then
+        assertThatThrownBy(() -> couponService.decreaseCouponQuantityAfterCheck(couponId))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("만료된 쿠폰입니다");
+
+        verify(couponRepository, times(1)).findCouponById(couponId);
+        verify(coupon, times(1)).validateForPublish();
+        verify(coupon, never()).decreaseQuantity(); // 예외 발생으로 호출되지 않음
+    }
+
+    @Test
+    void 정액_할인_금액_계산() {
+        // given
+        long couponId = 1L;
+        BigDecimal totalPrice = BigDecimal.valueOf(10000);
+        double discountAmount = 3000;
+
+        CouponEntity coupon = CouponEntity.createCoupon(
+                "정액 할인 쿠폰", "FIXED_AMOUNT", 100, discountAmount, LocalDateTime.now());
+
+        when(couponRepository.findCouponById(couponId)).thenReturn(coupon);
+
+        // when
+        BigDecimal result = couponService.calculateDiscountAmount(couponId, totalPrice);
+
+        // then
+        assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(discountAmount));
+        verify(couponRepository, times(1)).findCouponById(couponId);
+    }
+
+    @Test
+    void 퍼센트_할인_금액_계산() {
+        // given
+        long couponId = 1L;
+        BigDecimal totalPrice = BigDecimal.valueOf(10000);
+        double discountPercentage = 20; // 20%
+
+        CouponEntity coupon = CouponEntity.createCoupon(
+                "퍼센트 할인 쿠폰", "PERCENTAGE", 100, discountPercentage, LocalDateTime.now());
+
+        when(couponRepository.findCouponById(couponId)).thenReturn(coupon);
+
+        // when
+        BigDecimal result = couponService.calculateDiscountAmount(couponId, totalPrice);
+
+        // then
+        assertThat(result).isEqualByComparingTo(BigDecimal.valueOf(2000)); // 10000의 20%
+        verify(couponRepository, times(1)).findCouponById(couponId);
+    }
+
+    @Test
+    void 정액_할인_주문금액보다_큰_경우_주문금액만큼_할인() {
+        // given
+        long couponId = 1L;
+        BigDecimal totalPrice = BigDecimal.valueOf(5000);
+        double discountAmount = 10000; // 주문금액보다 큰 할인액
+
+        CouponEntity coupon = CouponEntity.createCoupon(
+                "정액 할인 쿠폰", "FIXED_AMOUNT", 100, discountAmount, LocalDateTime.now());
+
+        when(couponRepository.findCouponById(couponId)).thenReturn(coupon);
+
+        // when
+        BigDecimal result = couponService.calculateDiscountAmount(couponId, totalPrice);
+
+        // then
+        assertThat(result).isEqualByComparingTo(totalPrice); // 주문금액까지만 할인
+        verify(couponRepository, times(1)).findCouponById(couponId);
     }
 }

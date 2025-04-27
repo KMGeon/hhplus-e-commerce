@@ -15,21 +15,24 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class CouponController {
+public class CouponController implements CouponControllerDocs {
 
     private final CouponService couponService;
     private final CouponFacadeService couponFacadeService;
 
 
     @PostMapping("/coupon")
-    public ApiResponse<CouponResponse.CreateCouponResponse> createCoupon(@RequestBody CouponRequest.Create createRequest) {
+    public ApiResponse<CouponResponse.CreateCouponResponse> createCoupon(
+            @RequestBody CouponRequest.Create createRequest
+    ) {
         CouponInfo.CreateInfo couponInfo = couponService.save(createRequest.toCommand());
         return ApiResponse.success(CouponResponse.CreateCouponResponse.of(couponInfo));
     }
 
     @PostMapping("/coupon/publish")
     public ApiResponse<Long> publishCoupon(
-            @Valid @RequestBody CouponRequest.Publish publishRequest) {
+            @Valid @RequestBody CouponRequest.Publish publishRequest
+    ) {
         CouponCriteria.PublishCriteria criteria = publishRequest.toCriteria();
         return ApiResponse.success(couponFacadeService.publishCoupon(criteria));
     }

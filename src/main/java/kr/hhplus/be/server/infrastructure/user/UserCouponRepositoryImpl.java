@@ -19,14 +19,14 @@ public class UserCouponRepositoryImpl implements UserCouponRepository {
     }
 
     @Override
-    public Optional<UserCouponEntity> findById(long userCouponId) {
-        return repository.findById(userCouponId);
+    public UserCouponEntity findByUserIdAndCouponId(long userId, long couponId) {
+        return repository.findByUserIdAndCouponId(userId, couponId);
     }
-
-
 
     @Override
-    public boolean existsCoupon(long userId, long couponId) {
-        return repository.existsByUserIdAndCouponId(userId, couponId);
+    public UserCouponEntity findById(long userCouponId) {
+        return repository.findById(userCouponId)
+                .orElseThrow(()-> new IllegalArgumentException("사용자 쿠폰을 찾을 수 없습니다."));
     }
+
 }

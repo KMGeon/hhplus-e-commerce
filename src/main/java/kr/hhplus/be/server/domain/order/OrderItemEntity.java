@@ -27,11 +27,11 @@ public class OrderItemEntity extends BaseTimeEntity {
 
 
 
-    public static OrderItemEntity createOrderItem(ProductEntity entity, Long ea) {
+    public static OrderItemEntity createOrderItem(String skuId, Long ea, Long unitPrice) {
         return OrderItemEntity.builder()
-                .skuId(entity.getSkuId())
+                .skuId(skuId)
                 .ea(ea)
-                .unitPrice(entity.getUnitPrice())
+                .unitPrice(unitPrice)
                 .build();
     }
 
