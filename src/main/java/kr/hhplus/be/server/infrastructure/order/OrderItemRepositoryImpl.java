@@ -33,6 +33,11 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
         return orderJpaRepository.findHotProducts(startPath, endPath);
     }
 
+    @Override
+    public long updateExpireOrderStatus() {
+        return orderJpaRepository.updateExpireOrderStatus();
+    }
+
 
     @Override
     public OrderItemEntity save(OrderItemEntity entity) {

@@ -17,7 +17,6 @@ public class StockService {
     private final StockRepository stockRepository;
     private static final int MAX_RETRY = 5;
     private static final long BACKOFF_INITIAL_MS = 100L;
-    private static final String NAMED_LOCK_KEY = "stock_lock_";
 
     public List<StockInfo.Stock> checkEaAndProductInfo(StockCommand.Order stockCommand) {
         StockInventory requestInventory = StockInventory.fromStock(stockCommand);
@@ -50,7 +49,7 @@ public class StockService {
     public int decreaseStock(final Long createOrderId, StockCommand.Order stockCommand) {
         int cnt = 0;
         for (StockCommand.Order.Item item : stockCommand.items()) {
-            String lockKey = NAMED_LOCK_KEY + item.skuId();
+            String lockKey = "stock_lock_" + item.skuId();
             int retryCount = 0;
 
             while (retryCount < MAX_RETRY) {
@@ -72,7 +71,7 @@ public class StockService {
                         if (updated == item.ea()) {
                             // 요청한 수량만큼 정확히 차감됨 - 성공
                             cnt += updated;
-                            break;
+                            break; // while 루프 종료
                         } else if (updated > 0) {
                             // 일부만 차감됨 (재고 부족) - 실패로 처리하고 롤백
                             log.warn("재고 부족: skuId={}, 요청수량={}, 가용수량={}",
@@ -110,14 +109,14 @@ public class StockService {
                             item.skuId(), retryCount + 1, MAX_RETRY, e.getMessage());
                     retryCount++;
 
-                    if (retryCount >= MAX_RETRY)
+                    if (retryCount >= MAX_RETRY) {
                         throw new RuntimeException("재고 차감 최대 시도 횟수 초과: " + item.skuId(), e);
+                    }
 
+                    // 지수 백오프 적용 후 재시도
                     applyBackoff(retryCount);
-                }
-                /** 락을 획득했다면 반드시 해제 **/
-                finally {
-
+                } finally {
+                    // 락을 획득했다면 반드시 해제
                     if (lockAcquired) {
                         try {
                             stockRepository.releaseLock(lockKey);
@@ -131,6 +130,7 @@ public class StockService {
         return cnt;
     }
 
+    // 지수 백오프 로직을 별도 메서드로 분리
     private void applyBackoff(int retryCount) {
         try {
             long backoffMs = BACKOFF_INITIAL_MS * (long) Math.pow(2, retryCount);

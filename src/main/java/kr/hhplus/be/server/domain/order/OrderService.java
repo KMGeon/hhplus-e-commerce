@@ -56,4 +56,11 @@ public class OrderService {
 
         return orderCoreRepository.findHotProducts(startPath, endPath);
     }
+
+    /**
+     * 주문 만료 상태 업데이트
+     */
+    public void updateExpireOrderStatus() {
+        orderCoreRepository.updateExpireOrderStatus();
+    }
 }

@@ -49,7 +49,6 @@ public class PaymentFacadeService {
 
             for (int attempt = 0; attempt < MAX_RETRY; attempt++) {
                 try {
-                    // 낙관적 락 적용
                     userService.usePoint(userId, finalTotalPrice);
                     break;
                 } catch (ObjectOptimisticLockingFailureException | OptimisticLockException e) {
