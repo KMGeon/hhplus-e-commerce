@@ -5,7 +5,7 @@ import kr.hhplus.be.server.application.coupon.CouponCriteria;
 import kr.hhplus.be.server.application.coupon.CouponFacadeService;
 import kr.hhplus.be.server.domain.coupon.CouponInfo;
 import kr.hhplus.be.server.domain.coupon.CouponService;
-import kr.hhplus.be.server.support.ApiResponse;
+import kr.hhplus.be.server.interfaces.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,7 +34,7 @@ public class CouponController implements CouponControllerDocs {
             @Valid @RequestBody CouponRequest.Publish publishRequest
     ) {
         CouponCriteria.PublishCriteria criteria = publishRequest.toCriteria();
-        return ApiResponse.success(couponFacadeService.publishCoupon(criteria));
+        return ApiResponse.success(couponFacadeService.publishCouponLock(criteria));
     }
 
 }

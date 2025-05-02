@@ -3,7 +3,7 @@ package kr.hhplus.be.server.interfaces.product;
 import kr.hhplus.be.server.application.product.ProductFacadeService;
 import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
-import kr.hhplus.be.server.support.ApiResponse;
+import kr.hhplus.be.server.interfaces.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;

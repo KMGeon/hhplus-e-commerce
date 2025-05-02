@@ -32,4 +32,7 @@ public interface OrderJpaRepository extends JpaRepository<OrderEntity, Long> {
       AND status = 'CONFIRMED'
         """)
     long updateExpireOrderStatus();
+
+    @Query(value = "select o from OrderEntity o where now() > o.expireTime and o.status = 'CONFIRMED'")
+    List<OrderEntity> findOrderEntityByExpireTime();
 }

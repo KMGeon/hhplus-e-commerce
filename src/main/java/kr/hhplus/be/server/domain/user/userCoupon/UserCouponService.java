@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.user.userCoupon;
 
 import kr.hhplus.be.server.application.coupon.CouponCriteria;
+import kr.hhplus.be.server.infrastructure.redis.RedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 public class UserCouponService {
 
     private final UserCouponRepository userCouponRepository;
+    private final RedisRepository redisRepository;
 
     public Long publishOnlyIfFirstTime(CouponCriteria.PublishCriteria criteria) {
         Long userId = criteria.userId();
@@ -20,8 +22,7 @@ public class UserCouponService {
         if (userCoupon != null)
             throw new RuntimeException(String.format("이미 발행된 쿠폰입니다. userId: %d, couponId: %d", userId, couponId));
 
-        return userCouponRepository.save(UserCouponEntity.publishCoupon(userId, couponId))
-                .getUserId();
+        return userCouponRepository.save(UserCouponEntity.publishCoupon(userId, couponId)).getUserId();
     }
 
     public Long checkUserCoupon(Long userCouponId, Long userId) {
@@ -34,4 +35,5 @@ public class UserCouponService {
         userCouponRepository.findById(userCouponId)
                 .use(orderId);
     }
+
 }

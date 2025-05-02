@@ -3,7 +3,6 @@ package kr.hhplus.be.server.interfaces.product;
 import kr.hhplus.be.server.application.product.ProductFacadeService;
 import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
-import kr.hhplus.be.server.support.ApiResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

@@ -1,20 +1,18 @@
 package kr.hhplus.be.server.config;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import jakarta.annotation.PreDestroy;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-import javax.sql.DataSource;
-
-@Configuration
-class TestcontainersConfiguration {
+@TestConfiguration
+public class TestcontainersConfiguration {
 
     public static final MySQLContainer<?> MYSQL_CONTAINER;
+    public static final GenericContainer<?> REDIS_CONTAINER;
+
+    private static final int REDIS_PORT = 6379;
 
     static {
         MYSQL_CONTAINER = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
@@ -26,38 +24,35 @@ class TestcontainersConfiguration {
         System.setProperty("spring.datasource.url", MYSQL_CONTAINER.getJdbcUrl() + "?characterEncoding=UTF-8&serverTimezone=UTC");
         System.setProperty("spring.datasource.username", MYSQL_CONTAINER.getUsername());
         System.setProperty("spring.datasource.password", MYSQL_CONTAINER.getPassword());
-    }
 
-    @Bean
-    @Primary
-    public DataSource dataSource() {
-        HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(MYSQL_CONTAINER.getJdbcUrl() + "?characterEncoding=UTF-8&serverTimezone=UTC");
-        hikariConfig.setUsername(MYSQL_CONTAINER.getUsername());
-        hikariConfig.setPassword(MYSQL_CONTAINER.getPassword());
-        hikariConfig.setDriverClassName("com.mysql.cj.jdbc.Driver");
+        // JPA 설정 추가
+        System.setProperty("spring.jpa.hibernate.ddl-auto", "create");
+        System.setProperty("spring.sql.init.mode", "always");
+        System.setProperty("spring.sql.init.data-locations", "classpath:setup.sql");
+        System.setProperty("spring.jpa.defer-datasource-initialization", "true");
+        System.setProperty("spring.jpa.show-sql", "true");
 
-        hikariConfig.setMaximumPoolSize(20);
-        hikariConfig.setMinimumIdle(5);
-        hikariConfig.setConnectionTimeout(30000);
-        hikariConfig.setIdleTimeout(300000);
-        hikariConfig.setMaxLifetime(180000);
+        // Redis 컨테이너 설정
+        REDIS_CONTAINER = new GenericContainer<>(DockerImageName.parse("redis:latest"))
+                .withExposedPorts(REDIS_PORT)
+                .withCommand("redis-server", "--appendonly", "yes");
+        REDIS_CONTAINER.start();
 
-        hikariConfig.setValidationTimeout(3000);
-        hikariConfig.setLeakDetectionThreshold(60000);
-        hikariConfig.setConnectionTestQuery("SELECT 1");
+        // Redis 설정
+        String redisHost = REDIS_CONTAINER.getHost();
+        Integer redisMappedPort = REDIS_CONTAINER.getMappedPort(REDIS_PORT);
+        System.setProperty("spring.data.redis.host", redisHost);
+        System.setProperty("spring.data.redis.port", String.valueOf(redisMappedPort));
 
-        hikariConfig.setAutoCommit(true);
+        // Redisson 설정
+        System.setProperty("spring.redis.redisson.config",
+                String.format("singleServerConfig:\n" +
+                        "  address: \"redis://%s:%d\"\n" +
+                        "  connectionMinimumIdleSize: 1\n" +
+                        "  connectionPoolSize: 10\n" +
+                        "  connectTimeout: 10000\n" +
+                        "  timeout: 3000", redisHost, redisMappedPort));
 
-        hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
-        hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
-        hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
-        hikariConfig.addDataSourceProperty("useServerPrepStmts", "true");
-
-        hikariConfig.addDataSourceProperty("testWhileIdle", "true");
-        hikariConfig.addDataSourceProperty("testOnBorrow", "true");
-
-        return new HikariDataSource(hikariConfig);
     }
 
     @PreDestroy

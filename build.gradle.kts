@@ -1,3 +1,5 @@
+import org.springframework.boot.gradle.tasks.bundling.BootJar
+
 plugins {
 	java
 	id("org.springframework.boot") version "3.4.1"
@@ -52,6 +54,11 @@ dependencies {
 	compileOnly("org.projectlombok:lombok")
 	annotationProcessor("org.projectlombok:lombok")
 
+	// redis
+	implementation ("org.springframework.boot:spring-boot-starter-data-redis")
+	implementation("org.redisson:redisson-spring-boot-starter:3.27.0")
+	implementation("net.javacrumbs.shedlock:shedlock-spring:5.5.0")
+	implementation("net.javacrumbs.shedlock:shedlock-provider-redis-spring:5.5.0")
 
     // DB
 	runtimeOnly("com.mysql:mysql-connector-j")
@@ -61,6 +68,11 @@ dependencies {
 
 	// swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+	// retry
+	implementation ("org.springframework.retry:spring-retry")
+	implementation ("org.springframework:spring-aspects")
+
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -77,19 +89,11 @@ tasks.withType<Test> {
 
 
 tasks {
-	asciidoctor {
-		dependsOn(test)
-		configurations("asciidoctorExt")
-		sources {
-			include("**/index.adoc")
-		}
-		baseDirFollowsSourceFile()
-		inputs.dir(snippetsDir)
-	}
-	bootJar {
-		dependsOn(asciidoctor)
-		from("build/docs/asciidoc") {
-			into("static/docs")
-		}
-	}
+    bootJar {
+        archiveFileName.set("hhplus.jar")
+        mainClass.set("kr.hhplus.be.server.ServerApplication")
+    }
+    jar {
+        enabled = false
+    }
 }

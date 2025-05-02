@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.infrastructure.product;
 
+import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.product.CategoryEnum;
 import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
@@ -19,8 +20,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-class ProductRepositoryImplTest {
+class ProductRepositoryImplTest extends ApplicationContext {
 
     @Autowired
     private ProductRepositoryImpl productRepository;

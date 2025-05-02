@@ -10,6 +10,4 @@ public interface StockRepository {
     List<EnoughStockDTO> findSkuIdAndAvailableEa(List<String> skuIds);
     int updateStockDecreaseFifo(long orderId, String skuId, long ea);
     void restoreStockByOrderId(Long orderId);
-    Integer getLock(@Param("key") String key);
-    void releaseLock(@Param("key") String key);
 }

@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
-import org.springframework.web.ErrorResponse;
 
 import java.util.List;
 
@@ -61,7 +60,7 @@ public interface ProductControllerDocs {
                     )
             )
     })
-    kr.hhplus.be.server.support.ApiResponse<List<ProductStockDTO>> getProducts(
+    kr.hhplus.be.server.interfaces.ApiResponse<List<ProductStockDTO>> getProducts(
             @Parameter(
                     description = "조회할 상품 카테고리 (미입력 시 전체 상품 조회)",
                     required = false
@@ -116,5 +115,5 @@ public interface ProductControllerDocs {
                     )
             )
     })
-    kr.hhplus.be.server.support.ApiResponse<List<HotProductDTO>> getHotProducts();
+    kr.hhplus.be.server.interfaces.ApiResponse<List<HotProductDTO>> getHotProducts();
 } 

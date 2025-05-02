@@ -95,7 +95,7 @@ class OrderFacadeServiceTest {
         verify(productService, never()).checkProductSkuIds(any());
         verify(stockService, never()).checkEaAndProductInfo(any());
         verify(orderService, never()).createOrder(any(), any());
-        verify(stockService, never()).decreaseStock(any(), any());
+        verify(stockService, never()).decreaseStockPessimistic(any(), any());
     }
 
     @Test
@@ -122,7 +122,7 @@ class OrderFacadeServiceTest {
 
         verify(stockService, never()).checkEaAndProductInfo(any());
         verify(orderService, never()).createOrder(any(), any());
-        verify(stockService, never()).decreaseStock(any(), any());
+        verify(stockService, never()).decreaseStockPessimistic(any(), any());
     }
 
     @Test
@@ -151,6 +151,6 @@ class OrderFacadeServiceTest {
         inOrder.verify(stockService).checkEaAndProductInfo(any(StockCommand.Order.class));
 
         verify(orderService, never()).createOrder(any(), any());
-        verify(stockService, never()).decreaseStock(any(), any());
+        verify(stockService, never()).decreaseStockPessimistic(any(), any());
     }
 }

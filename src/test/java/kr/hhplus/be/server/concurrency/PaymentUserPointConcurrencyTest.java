@@ -36,9 +36,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-public class PaymentUserPointConcurrencyTest {
+
+public class PaymentUserPointConcurrencyTest extends ApplicationContext{
     @Autowired
     private UserJpaRepository userJpaRepository;
 

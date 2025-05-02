@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.domain.order;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.BaseTimeEntity;
+import kr.hhplus.be.server.domain.support.BaseTimeEntity;
 import lombok.*;
 
 import java.math.BigDecimal;
@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @Table(name = "orders")
 @Getter
-@ToString(exclude = {"orderProducts", "user"})
+@ToString(exclude = {"orderProducts"})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderEntity extends BaseTimeEntity {
 

@@ -1,10 +1,8 @@
 package kr.hhplus.be.server.domain.user;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.BaseTimeEntity;
+import kr.hhplus.be.server.domain.support.BaseTimeEntity;
 import lombok.*;
-
-import java.math.BigDecimal;
 
 @Getter
 @ToString

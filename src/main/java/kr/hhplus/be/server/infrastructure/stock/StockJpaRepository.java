@@ -11,13 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 public interface StockJpaRepository extends JpaRepository<StockEntity, Long> {
-
-    @Query(nativeQuery = true, value= "select get_lock(:key, 5000)")
-    Integer getLock(@Param("key") String key);
-
-    @Query(value = "select release_lock(:key)", nativeQuery = true)
-    void releaseLock(@Param("key") String key);
-
     @Query(nativeQuery = true, value = """
             SELECT a.sku_id AS skuId,
                    COUNT(*) AS ea,

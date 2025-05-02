@@ -2,6 +2,8 @@ package kr.hhplus.be.server.domain.order;
 
 import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import lombok.RequiredArgsConstructor;
+import org.redisson.api.RedissonClient;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,9 +16,14 @@ import java.util.List;
 public class OrderService {
 
     private final OrderCoreRepository orderCoreRepository;
+    private final RedissonClient redissonClient;
+
+
 
     public Long createOrder(Long userId, List<OrderCommand.Product> products) {
         OrderEntity order = OrderEntity.createOrder(userId, LocalDateTime.now());
+
+
 
         List<OrderItemEntity> orderItems = products.stream()
                 .map(v1 -> OrderItemEntity.createOrderItem(v1.skuId(), v1.ea(), v1.unitPrice()))

@@ -41,9 +41,8 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-@SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class IntegrationTest  {
+
+public class IntegrationTest  extends ApplicationContext{
 
     @Autowired
     OrderFacadeService orderFacadeService;
@@ -139,8 +138,8 @@ public class IntegrationTest  {
         assertEquals(9187, userEntity.getPoint());
         assertEquals(CouponStatus.USED, userCouponEntity.getCouponStatus(), "쿠폰 상태는 USED여야 함");
         assertEquals(OrderStatus.PAID, orderEntity.getStatus(), "주문 상태는 PAID여야 함");
-        assertEquals(BigDecimal.valueOf(1813), orderEntity.getTotalPrice());
-        assertEquals(BigDecimal.valueOf(1000.0), orderEntity.getDiscountAmount(), "");
+        assertEquals(new BigDecimal("1813.00"), orderEntity.getTotalPrice());
+        assertEquals(new BigDecimal("1000.00"), orderEntity.getDiscountAmount());
     }
 
 

@@ -21,8 +21,8 @@ public class CouponFacadeService {
     }
 
     @Transactional
-    public long publishCouponPessimistic(CouponCriteria.PublishCriteria criteria) {
-        couponService.decreaseCouponQuantityAfterCheckPessimistic(criteria.couponId());
+    public long publishCouponLock(CouponCriteria.PublishCriteria criteria) {
+        couponService.decreaseCouponQuantityAfterCheckLock(criteria.couponId());
         return userCouponService.publishOnlyIfFirstTime(criteria);
     }
 }

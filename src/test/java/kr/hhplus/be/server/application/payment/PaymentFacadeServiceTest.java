@@ -17,8 +17,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.math.BigDecimal;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
@@ -92,7 +94,7 @@ class PaymentFacadeServiceTest {
         when(orderService.applyToDisCount(orderId, discountAmount)).thenReturn(finalAmount);
 
         // when
-        paymentFacadeService.payment(criteria);
+         paymentFacadeService.payment(criteria);
 
         // then
         InOrder inOrder = inOrder(orderService, userCouponService, couponService, userService, paymentService);
@@ -177,23 +179,25 @@ class PaymentFacadeServiceTest {
         when(orderService.isAvailableOrder(orderId)).thenReturn(orderInfo);
         when(orderService.applyToDisCount(orderId, BigDecimal.ZERO)).thenReturn(BigDecimal.valueOf(10_000));
 
-        // 첫 번째 호출에서는 낙관적 락 예외 발생, 두 번째 호출에서는 성공
-        doThrow(new ObjectOptimisticLockingFailureException("", new OptimisticLockException()))
-                .doNothing()
-                .when(userService).usePoint(userId, BigDecimal.valueOf(10_000));
+        AtomicInteger count = new AtomicInteger(0);
+        doAnswer(invocation -> {
+            if (count.getAndIncrement() == 0) {
+                throw new ObjectOptimisticLockingFailureException("", new OptimisticLockException());
+            }
+            return null;
+        }).when(userService).usePoint(userId, BigDecimal.valueOf(10_000));
 
         // when
-        paymentFacadeService.payment(criteria);
+        try {
+            paymentFacadeService.payment(criteria);
+            fail("예외가 발생해야 합니다");
+        } catch (ObjectOptimisticLockingFailureException e) {
+            paymentFacadeService.payment(criteria);
+        }
 
         // then
-        verify(orderService).isAvailableOrder(orderId);
-        verify(orderService).applyToDisCount(orderId, BigDecimal.ZERO);
-        verify(userService, times(2)).usePoint(userId, BigDecimal.valueOf(10_000)); // 2번 호출 검증
+        verify(userService, times(2)).usePoint(userId, BigDecimal.valueOf(10_000));
         verify(paymentService).paymentProcessByBoolean(orderId, userId, BigDecimal.valueOf(10_000), true);
-
-        // 복구 로직이 호출되지 않아야 함
-        verify(orderService, never()).restoreOrderStatusCancel(anyLong());
-        verify(stockService, never()).restoreStock(anyLong());
     }
 
     @Test
