@@ -9,7 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import static kr.hhplus.be.server.domain.support.RedisKeyStore.DECREASE_COUPON_LOCK;
+import static kr.hhplus.be.server.domain.support.RedisLockKeyStore.DECREASE_COUPON_LOCK;
+
 
 @Service
 @RequiredArgsConstructor
@@ -29,11 +30,6 @@ public class CouponService {
         return CouponInfo.CreateInfo.of(saveCoupon.getId());
     }
 
-    public void decreaseCouponQuantityAfterCheck(long couponId) {
-        CouponEntity coupon = couponRepository.findCouponById(couponId);
-        coupon.validateForPublish();
-        coupon.decreaseQuantity();
-    }
 
     @DistributedLock(key = DECREASE_COUPON_LOCK)
     @Transactional(propagation = Propagation.REQUIRES_NEW)

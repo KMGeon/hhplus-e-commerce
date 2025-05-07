@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.application.coupon;
 
 import kr.hhplus.be.server.domain.coupon.CouponService;
-import kr.hhplus.be.server.domain.user.UserService;
 import kr.hhplus.be.server.domain.user.userCoupon.UserCouponService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,12 +33,12 @@ class CouponFacadeServiceTest {
 
         when(userCouponService.publishOnlyIfFirstTime(criteria)).thenReturn(userId);
 
-        long result = couponFacadeService.publishCoupon(criteria);
+        long result = couponFacadeService.publishCouponLock(criteria);
 
         assertThat(result).isEqualTo(userId);
 
         InOrder inOrder = inOrder(couponService, userCouponService);
-        inOrder.verify(couponService).decreaseCouponQuantityAfterCheck(couponId);
+        inOrder.verify(couponService).decreaseCouponQuantityAfterCheckLock(couponId);
         inOrder.verify(userCouponService).publishOnlyIfFirstTime(criteria);
     }
 
@@ -50,13 +49,13 @@ class CouponFacadeServiceTest {
         CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, couponId);
 
         doThrow(new RuntimeException("쿠폰이 모두 소진되었습니다."))
-                .when(couponService).decreaseCouponQuantityAfterCheck(couponId);
+                .when(couponService).decreaseCouponQuantityAfterCheckLock(couponId);
 
-        assertThatThrownBy(() -> couponFacadeService.publishCoupon(criteria))
+        assertThatThrownBy(() -> couponFacadeService.publishCouponLock(criteria))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("쿠폰이 모두 소진되었습니다");
 
-        verify(couponService).decreaseCouponQuantityAfterCheck(couponId);
+        verify(couponService).decreaseCouponQuantityAfterCheckLock(couponId);
         verify(userCouponService, never()).publishOnlyIfFirstTime(any());
     }
 
@@ -69,12 +68,12 @@ class CouponFacadeServiceTest {
         doThrow(new RuntimeException("이미 발행된 쿠폰입니다"))
                 .when(userCouponService).publishOnlyIfFirstTime(criteria);
 
-        assertThatThrownBy(() -> couponFacadeService.publishCoupon(criteria))
+        assertThatThrownBy(() -> couponFacadeService.publishCouponLock(criteria))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("이미 발행된 쿠폰입니다");
 
         InOrder inOrder = inOrder(couponService, userCouponService);
-        inOrder.verify(couponService).decreaseCouponQuantityAfterCheck(couponId);
+        inOrder.verify(couponService).decreaseCouponQuantityAfterCheckLock(couponId);
         inOrder.verify(userCouponService).publishOnlyIfFirstTime(criteria);
     }
 }

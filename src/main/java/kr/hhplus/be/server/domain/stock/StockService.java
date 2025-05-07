@@ -1,6 +1,8 @@
 package kr.hhplus.be.server.domain.stock;
 
 import kr.hhplus.be.server.domain.stock.projection.EnoughStockDTO;
+import kr.hhplus.be.server.domain.support.DistributedLock;
+import kr.hhplus.be.server.domain.support.RedisLockKeyStore;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -15,8 +17,6 @@ import java.util.List;
 public class StockService {
 
     private final StockRepository stockRepository;
-    private static final int MAX_RETRY = 5;
-    private static final long BACKOFF_INITIAL_MS = 100L;
 
     public List<StockInfo.Stock> checkEaAndProductInfo(StockCommand.Order stockCommand) {
         StockInventory requestInventory = StockInventory.fromStock(stockCommand);
@@ -33,7 +33,8 @@ public class StockService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public int decreaseStockPessimistic(final Long createOrderId, StockCommand.Order stockCommand) {
+    @DistributedLock(key = RedisLockKeyStore.DECREASE_STOCK_ORDER_LOCK)
+    public int decreaseStockLock(final Long createOrderId, StockCommand.Order stockCommand) {
         int cnt = 0;
         for (StockCommand.Order.Item item : stockCommand.items()) {
             cnt += stockRepository.updateStockDecreaseFifo(
@@ -45,8 +46,8 @@ public class StockService {
         return cnt;
     }
 
-    public void restoreStock(Long orderId) {
-        stockRepository.restoreStockByOrderId(orderId);
+    public void restoreStock(List<Long> orderId) {
+        stockRepository.restoreStockByOrderIds(orderId);
     }
 
 }
