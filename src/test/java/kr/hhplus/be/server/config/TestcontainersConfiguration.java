@@ -32,19 +32,16 @@ public class TestcontainersConfiguration {
         System.setProperty("spring.jpa.defer-datasource-initialization", "true");
         System.setProperty("spring.jpa.show-sql", "true");
 
-        // Redis 컨테이너 설정
         REDIS_CONTAINER = new GenericContainer<>(DockerImageName.parse("redis:latest"))
                 .withExposedPorts(REDIS_PORT)
                 .withCommand("redis-server", "--appendonly", "yes");
         REDIS_CONTAINER.start();
 
-        // Redis 설정
         String redisHost = REDIS_CONTAINER.getHost();
         Integer redisMappedPort = REDIS_CONTAINER.getMappedPort(REDIS_PORT);
         System.setProperty("spring.data.redis.host", redisHost);
         System.setProperty("spring.data.redis.port", String.valueOf(redisMappedPort));
 
-        // Redisson 설정
         System.setProperty("spring.redis.redisson.config",
                 String.format("singleServerConfig:\n" +
                         "  address: \"redis://%s:%d\"\n" +

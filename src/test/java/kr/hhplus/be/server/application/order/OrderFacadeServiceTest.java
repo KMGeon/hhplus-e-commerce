@@ -17,7 +17,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -64,7 +63,7 @@ class OrderFacadeServiceTest {
         when(orderService.createOrder(eq(userId), any())).thenReturn(orderId);
 
         int updatedCount = 5; // 2개 + 3개 = 총 5개 업데이트
-        when(stockService.decreaseStockPessimistic(eq(orderId), any(StockCommand.Order.class))).thenReturn(updatedCount);
+        when(stockService.decreaseStockLock(eq(orderId), any(StockCommand.Order.class))).thenReturn(updatedCount);
 
         Long result = orderFacadeService.createOrder(criteria);
 
@@ -74,7 +73,7 @@ class OrderFacadeServiceTest {
         inOrder.verify(productService).checkProductSkuIds(any(OrderCriteria.Item[].class));
         inOrder.verify(stockService).checkEaAndProductInfo(any(StockCommand.Order.class));
         inOrder.verify(orderService).createOrder(eq(userId), any());
-        inOrder.verify(stockService).decreaseStockPessimistic(eq(orderId), any(StockCommand.Order.class));
+        inOrder.verify(stockService).decreaseStockLock(eq(orderId), any(StockCommand.Order.class));
     }
 
     @Test
@@ -95,7 +94,7 @@ class OrderFacadeServiceTest {
         verify(productService, never()).checkProductSkuIds(any());
         verify(stockService, never()).checkEaAndProductInfo(any());
         verify(orderService, never()).createOrder(any(), any());
-        verify(stockService, never()).decreaseStockPessimistic(any(), any());
+        verify(stockService, never()).decreaseStockLock(any(), any());
     }
 
     @Test
@@ -122,7 +121,7 @@ class OrderFacadeServiceTest {
 
         verify(stockService, never()).checkEaAndProductInfo(any());
         verify(orderService, never()).createOrder(any(), any());
-        verify(stockService, never()).decreaseStockPessimistic(any(), any());
+        verify(stockService, never()).decreaseStockLock(any(), any());
     }
 
     @Test
@@ -151,6 +150,6 @@ class OrderFacadeServiceTest {
         inOrder.verify(stockService).checkEaAndProductInfo(any(StockCommand.Order.class));
 
         verify(orderService, never()).createOrder(any(), any());
-        verify(stockService, never()).decreaseStockPessimistic(any(), any());
+        verify(stockService, never()).decreaseStockLock(any(), any());
     }
 }

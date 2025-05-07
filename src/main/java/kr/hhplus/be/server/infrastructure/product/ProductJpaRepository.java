@@ -2,11 +2,14 @@ package kr.hhplus.be.server.infrastructure.product;
 
 import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+
 
 public interface ProductJpaRepository extends JpaRepository<ProductEntity,Long> {
 
@@ -27,7 +30,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity,Long> 
             WHERE p.category = :category
             GROUP BY p.product_id
             """)
-    List<ProductStockDTO> getProductsWithStockInfoByCategory(@Param("category") String category);
+    Page<ProductStockDTO> getProductsWithStockInfoByCategory(@Param("category") String category, Pageable pageable);
 
     @Query(nativeQuery = true, value = """
             SELECT
@@ -45,7 +48,7 @@ public interface ProductJpaRepository extends JpaRepository<ProductEntity,Long> 
              on p.sku_id = s.sku_id
             GROUP BY p.product_id
             """)
-    List<ProductStockDTO> getProductsWithStockInfo();
+    Page<ProductStockDTO> getProductsWithStockInfo(Pageable pageable);
 
     @Query("SELECT COUNT(p) FROM product p WHERE p.skuId IN :skuIds")
     long countBySkuIdIn(@Param("skuIds") List<String> skuIds);

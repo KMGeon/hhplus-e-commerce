@@ -17,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertThrows;
@@ -85,7 +86,7 @@ class PaymentFacadeServiceTest {
 
         OrderInfo.OrderPaymentInfo orderInfo = new OrderInfo.OrderPaymentInfo(orderId, BigDecimal.valueOf(10_000));
         when(orderService.isAvailableOrder(orderId)).thenReturn(orderInfo);
-        when(userCouponService.checkUserCoupon(userCouponId, orderId)).thenReturn(couponId);
+        when(userCouponService.checkUserCoupon(any(), any())).thenReturn(couponId);
 
         BigDecimal discountAmount = BigDecimal.valueOf(2_000);
         when(couponService.calculateDiscountAmount(couponId, orderInfo.totalPrice())).thenReturn(discountAmount);
@@ -99,7 +100,7 @@ class PaymentFacadeServiceTest {
         // then
         InOrder inOrder = inOrder(orderService, userCouponService, couponService, userService, paymentService);
         inOrder.verify(orderService).isAvailableOrder(orderId);
-        inOrder.verify(userCouponService).checkUserCoupon(userCouponId, orderId);
+        inOrder.verify(userCouponService).checkUserCoupon(any(), any());
         inOrder.verify(couponService).calculateDiscountAmount(couponId, orderInfo.totalPrice());
         inOrder.verify(userCouponService).useCoupon(userCouponId, orderId);
         inOrder.verify(orderService).applyToDisCount(orderId, discountAmount);
@@ -117,7 +118,7 @@ class PaymentFacadeServiceTest {
 
         OrderInfo.OrderPaymentInfo orderInfo = new OrderInfo.OrderPaymentInfo(orderId, BigDecimal.valueOf(10_000));
         when(orderService.isAvailableOrder(orderId)).thenReturn(orderInfo);
-        when(userCouponService.checkUserCoupon(userCouponId, orderId)).thenReturn(couponId);
+        when(userCouponService.checkUserCoupon(any(), any())).thenReturn(couponId);
 
         BigDecimal discountAmount = BigDecimal.valueOf(2_000);
         when(couponService.calculateDiscountAmount(couponId, orderInfo.totalPrice())).thenReturn(discountAmount);
@@ -130,7 +131,7 @@ class PaymentFacadeServiceTest {
 
         // then
         verify(orderService).isAvailableOrder(orderId);
-        verify(userCouponService).checkUserCoupon(userCouponId, orderId);
+        verify(userCouponService).checkUserCoupon(any(), any());
         verify(couponService).calculateDiscountAmount(couponId, orderInfo.totalPrice());
         verify(userCouponService).useCoupon(userCouponId, orderId);
         verify(orderService).applyToDisCount(orderId, discountAmount);
@@ -139,7 +140,7 @@ class PaymentFacadeServiceTest {
 
         // 복구 로직이 호출되지 않아야 함
         verify(orderService, never()).restoreOrderStatusCancel(anyLong());
-        verify(stockService, never()).restoreStock(anyLong());
+        verify(stockService, never()).restoreStock(anyList());
     }
 
     @Test
@@ -226,7 +227,7 @@ class PaymentFacadeServiceTest {
 
         // 복구 로직이 호출되었는지 확인
         verify(orderService).restoreOrderStatusCancel(orderId);
-        verify(stockService).restoreStock(orderId);
+        verify(stockService).restoreStock(List.of(orderId));
         verify(paymentService).paymentProcessByBoolean(orderId, userId, BigDecimal.ZERO, false);
     }
 }

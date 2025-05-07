@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -56,7 +57,7 @@ public class PaymentFacadeService {
         } catch (Exception e) {
             log.error("결제 실패: orderId={}, userId={}, 원인={}", orderId, userId, e.getMessage(), e);
             orderService.restoreOrderStatusCancel(orderId);
-            stockService.restoreStock(orderId);
+            stockService.restoreStock(List.of(orderId));
             paymentService.paymentProcessByBoolean(orderId, userId, BigDecimal.ZERO, false);
             throw e;
         }

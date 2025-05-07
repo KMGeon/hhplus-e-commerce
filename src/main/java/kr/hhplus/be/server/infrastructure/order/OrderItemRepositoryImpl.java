@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -25,7 +24,7 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
     @Override
     public OrderEntity findById(Long id) {
         return orderJpaRepository.findById(id)
-                .orElseThrow(()-> new RuntimeException("주문이 존재하지 않습니다."));
+                .orElseThrow(() -> new RuntimeException("주문이 존재하지 않습니다."));
     }
 
     @Override
@@ -34,10 +33,14 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
     }
 
     @Override
-    public long updateExpireOrderStatus() {
-        return orderJpaRepository.updateExpireOrderStatus();
+    public void updateExpireOrderStatus(List<Long> expiredOrderIds) {
+        orderJpaRepository.updateOrderStatusByIds(expiredOrderIds);
     }
 
+    @Override
+    public List<Long> findExpiredOrderIds() {
+        return orderJpaRepository.findExpiredOrderIds();
+    }
 
     @Override
     public OrderItemEntity save(OrderItemEntity entity) {

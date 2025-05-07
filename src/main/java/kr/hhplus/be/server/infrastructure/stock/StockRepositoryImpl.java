@@ -25,7 +25,7 @@ public class StockRepositoryImpl implements StockRepository {
     }
 
     @Override
-    public void restoreStockByOrderId(Long orderId) {
-        repository.restoreStockByOrderId(orderId);
+    public void restoreStockByOrderIds(List<Long> orderId) {
+        repository.restoreStockByOrderIds(orderId);
     }
 }

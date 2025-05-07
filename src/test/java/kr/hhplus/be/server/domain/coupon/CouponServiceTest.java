@@ -65,7 +65,7 @@ class CouponServiceTest {
         doNothing().when(coupon).validateForPublish();
 
         // when
-        couponService.decreaseCouponQuantityAfterCheck(couponId);
+        couponService.decreaseCouponQuantityAfterCheckLock(couponId);
 
         // then
         verify(couponRepository, times(1)).findCouponById(couponId);
@@ -91,7 +91,7 @@ class CouponServiceTest {
 
         // when
 // then
-        assertThatThrownBy(() -> couponService.decreaseCouponQuantityAfterCheck(couponId))
+        assertThatThrownBy(() -> couponService.decreaseCouponQuantityAfterCheckLock(couponId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("쿠폰이 모두 소진되었습니다");
 
@@ -118,7 +118,7 @@ class CouponServiceTest {
 
         // when
 // then
-        assertThatThrownBy(() -> couponService.decreaseCouponQuantityAfterCheck(couponId))
+        assertThatThrownBy(() -> couponService.decreaseCouponQuantityAfterCheckLock(couponId))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("만료된 쿠폰입니다");
 

@@ -16,14 +16,9 @@ import java.util.List;
 public class OrderService {
 
     private final OrderCoreRepository orderCoreRepository;
-    private final RedissonClient redissonClient;
-
-
 
     public Long createOrder(Long userId, List<OrderCommand.Product> products) {
         OrderEntity order = OrderEntity.createOrder(userId, LocalDateTime.now());
-
-
 
         List<OrderItemEntity> orderItems = products.stream()
                 .map(v1 -> OrderItemEntity.createOrderItem(v1.skuId(), v1.ea(), v1.unitPrice()))
@@ -64,10 +59,9 @@ public class OrderService {
         return orderCoreRepository.findHotProducts(startPath, endPath);
     }
 
-    /**
-     * 주문 만료 상태 업데이트
-     */
-    public void updateExpireOrderStatus() {
-        orderCoreRepository.updateExpireOrderStatus();
+    public List<Long> updateExpireOrderStatus() {
+        List<Long> expiredOrderIds = orderCoreRepository.findExpiredOrderIds();
+        orderCoreRepository.updateExpireOrderStatus(expiredOrderIds);
+        return expiredOrderIds;
     }
 }

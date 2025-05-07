@@ -56,9 +56,9 @@ public interface StockJpaRepository extends JpaRepository<StockEntity, Long> {
 
     @Modifying
     @Query(nativeQuery = true, value = """
-            update stock s
-            set s.order_id = null
-            where s.order_id = :orderId
-            """)
-    void restoreStockByOrderId(@Param("orderId") Long orderId);
+        update stock s
+        set s.order_id = null
+        where s.order_id in :orderIds
+        """)
+    void restoreStockByOrderIds(@Param("orderIds") List<Long> orderIds);
 }

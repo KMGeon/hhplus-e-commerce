@@ -5,6 +5,7 @@ import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import kr.hhplus.be.server.interfaces.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,10 +20,12 @@ public class ProductController implements ProductControllerDocs {
 
     /** 상품조회 **/
     @GetMapping("/api/v1/product")
-    public ApiResponse<List<ProductStockDTO>> getProducts(
-            @RequestParam(value = "category", required = false) String category
+    public ApiResponse<Page<ProductStockDTO>> getProducts(
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @RequestParam(value = "size", defaultValue = "10") int size
     ) {
-        return ApiResponse.success(productFacadeService.getProducts(category));
+        return ApiResponse.success(productFacadeService.getProducts(category, page, size));
     }
 
     /** 인기 상품 조회 **/

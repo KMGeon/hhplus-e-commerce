@@ -4,6 +4,8 @@ import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.product.ProductRepository;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -28,13 +30,13 @@ public class ProductRepositoryImpl implements ProductRepository {
     }
 
     @Override
-    public List<ProductStockDTO> getProductsWithStockInfoByCategory(String categoryCode) {
-        return repository.getProductsWithStockInfoByCategory(categoryCode);
+    public Page<ProductStockDTO> getProductsWithStockInfoByCategory(String categoryCode, Pageable pageable) {
+        return repository.getProductsWithStockInfoByCategory(categoryCode, pageable);
     }
 
     @Override
-    public List<ProductStockDTO> getProductsWithStockInfo() {
-        return repository.getProductsWithStockInfo();
+    public Page<ProductStockDTO> getProductsWithStockInfo(Pageable pageable) {
+        return repository.getProductsWithStockInfo(pageable);
     }
 
     @Override

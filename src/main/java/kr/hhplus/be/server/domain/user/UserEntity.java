@@ -16,12 +16,12 @@ public class UserEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
-    private Point point;
 
     @Version
     private Long version;
 
+    @Embedded
+    private Point point;
 
     public static UserEntity createNewUser() {
         UserEntity user = new UserEntity();

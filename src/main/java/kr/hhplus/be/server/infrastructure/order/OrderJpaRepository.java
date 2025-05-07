@@ -23,15 +23,22 @@ public interface OrderJpaRepository extends JpaRepository<OrderEntity, Long> {
     List<HotProductDTO> findHotProducts(@Param("startPath") String startPath,
                                         @Param("endPath") String endPath);
 
+
+    @Query(nativeQuery = true, value = """
+    SELECT id FROM orders 
+    WHERE expire_time < NOW() 
+    AND status = 'CONFIRMED'
+    """)
+    List<Long> findExpiredOrderIds();
+
     @Modifying
     @Query(nativeQuery = true, value = """
-        UPDATE orders
-      SET status = 'CANCELLED',
-          updated_at = NOW()
-      WHERE expire_time < NOW()
-      AND status = 'CONFIRMED'
-        """)
-    long updateExpireOrderStatus();
+    UPDATE orders
+    SET status = 'CANCELLED',
+        updated_at = NOW()
+    WHERE id IN :ids
+    """)
+    long updateOrderStatusByIds(@Param("ids") List<Long> ids);
 
     @Query(value = "select o from OrderEntity o where now() > o.expireTime and o.status = 'CONFIRMED'")
     List<OrderEntity> findOrderEntityByExpireTime();
