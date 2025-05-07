@@ -1,3 +1,6 @@
+SET FOREIGN_KEY_CHECKS = 0;
+
+
 -- APPLE 제품
 INSERT INTO product (unit_price, product_name, sku_id, category) VALUES (2000, 'Apple-1', 'A-0001-0001', 'APPLE');
 INSERT INTO product (unit_price, product_name, sku_id, category) VALUES (2100, 'Apple-2', 'A-0001-0002', 'APPLE');
@@ -59,3 +62,4 @@ INSERT INTO product (unit_price, product_name, sku_id, category) VALUES (2800, '
 INSERT INTO product (unit_price, product_name, sku_id, category) VALUES (2900, 'Sony-10', 'Y-0001-0010', 'SONY');
 
 
+SET FOREIGN_KEY_CHECKS = 1;
