@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.interfaces.product;
 
 import kr.hhplus.be.server.application.product.ProductFacadeService;
-import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import kr.hhplus.be.server.interfaces.ApiResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,7 @@ public class ProductController implements ProductControllerDocs {
 
     /** 인기 상품 조회 **/
     @GetMapping("/api/v1/hot-product")
-    public ApiResponse<List<HotProductDTO>> getHotProducts() {
+    public ApiResponse<List<kr.hhplus.be.server.domain.order.projection.HotProductQuery>> getHotProducts() {
         return ApiResponse.success(productFacadeService.getHotProducts());
     }
 }

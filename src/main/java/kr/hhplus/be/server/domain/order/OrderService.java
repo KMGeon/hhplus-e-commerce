@@ -1,9 +1,6 @@
 package kr.hhplus.be.server.domain.order;
 
-import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import lombok.RequiredArgsConstructor;
-import org.redisson.api.RedissonClient;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -47,16 +44,12 @@ public class OrderService {
         return order.getFinalAmount();
     }
 
-    public List<HotProductDTO> getHotProducts() {
-        LocalDateTime current = LocalDateTime.now();
 
-        LocalDateTime startOfDay = current.minusDays(3).with(LocalTime.MIN);
-        LocalDateTime endOfDay = current.with(LocalTime.MAX);
-
-        String startPath = DatePathProvider.toPath(startOfDay);
-        String endPath = DatePathProvider.toPath(endOfDay);
-
-        return orderCoreRepository.findHotProducts(startPath, endPath);
+    public List<kr.hhplus.be.server.domain.order.projection.HotProductQuery> getHotProducts(LocalDateTime current) {
+        return orderCoreRepository.findHotProducts(
+                DatePathProvider.toPath(current.minusDays(3).with(LocalTime.MIN)),
+                DatePathProvider.toPath(current.with(LocalTime.MAX))
+        );
     }
 
     public List<Long> updateExpireOrderStatus() {

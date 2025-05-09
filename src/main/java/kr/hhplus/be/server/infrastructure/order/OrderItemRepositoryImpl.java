@@ -3,6 +3,7 @@ package kr.hhplus.be.server.infrastructure.order;
 import kr.hhplus.be.server.domain.order.OrderCoreRepository;
 import kr.hhplus.be.server.domain.order.OrderEntity;
 import kr.hhplus.be.server.domain.order.OrderItemEntity;
+import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
 import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -15,6 +16,7 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
 
     private final OrderJpaRepository orderJpaRepository;
     private final OrderItemJpaRepository orderItemJpaRepository;
+    private final HotProductQueryRepository hotProductQueryRepository;
 
     @Override
     public OrderEntity save(OrderEntity order) {
@@ -28,8 +30,8 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
     }
 
     @Override
-    public List<HotProductDTO> findHotProducts(String startPath, String endPath) {
-        return orderJpaRepository.findHotProducts(startPath, endPath);
+    public List<HotProductQuery> findHotProducts(String startPath, String endPath) {
+        return hotProductQueryRepository.findHotProducts(startPath, endPath);
     }
 
     @Override

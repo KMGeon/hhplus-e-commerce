@@ -8,7 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
+import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import org.springframework.data.domain.Page;
 
@@ -115,7 +115,7 @@ public interface ProductControllerDocs {
                     description = "인기 상품 목록 조회 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HotProductDTO.class),
+                            schema = @Schema(implementation = HotProductQuery.class),
                             examples = @ExampleObject(
                                     value = """
                                             {
@@ -123,28 +123,16 @@ public interface ProductControllerDocs {
                                                 "message": null,
                                                 "data": [
                                                     {
-                                                        "id": 3,
-                                                        "name": "초코과자",
-                                                        "price": 2000,
+                                                        "skuId": "SKU-003",
                                                         "category": "과자",
-                                                        "description": "달콤한 초코과자",
-                                                        "stock": 50,
-                                                        "popularity": 9.5,
-                                                        "reviewCount": 120,
-                                                        "createdAt": "2024-07-01T10:00:00",
-                                                        "updatedAt": "2024-07-01T10:00:00"
+                                                        "productName": "초코과자",
+                                                        "orderCount": 120
                                                     },
                                                     {
-                                                        "id": 5,
-                                                        "name": "아이스크림",
-                                                        "price": 1800,
+                                                        "skuId": "SKU-005",
                                                         "category": "디저트",
-                                                        "description": "부드러운 아이스크림",
-                                                        "stock": 75,
-                                                        "popularity": 8.9,
-                                                        "reviewCount": 98,
-                                                        "createdAt": "2024-07-01T10:00:00",
-                                                        "updatedAt": "2024-07-01T10:00:00"
+                                                        "productName": "아이스크림",
+                                                        "orderCount": 98
                                                     }
                                                 ]
                                             }
@@ -153,5 +141,5 @@ public interface ProductControllerDocs {
                     )
             )
     })
-    kr.hhplus.be.server.interfaces.ApiResponse<List<HotProductDTO>> getHotProducts();
+    kr.hhplus.be.server.interfaces.ApiResponse<List<HotProductQuery>> getHotProducts();
 }

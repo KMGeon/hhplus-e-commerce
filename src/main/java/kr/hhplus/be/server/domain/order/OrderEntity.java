@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.order;
 
 import jakarta.persistence.*;
+import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
 import kr.hhplus.be.server.domain.support.BaseTimeEntity;
 import lombok.*;
 
