@@ -85,7 +85,7 @@ public interface OrderControllerDocs {
                     )
             )
     })
-    kr.hhplus.be.server.support.ApiResponse<Long> createOrder(
+    kr.hhplus.be.server.interfaces.ApiResponse<Long> createOrder(
             @Valid @Parameter(
                     description = "주문 생성 요청 정보",
                     required = true,

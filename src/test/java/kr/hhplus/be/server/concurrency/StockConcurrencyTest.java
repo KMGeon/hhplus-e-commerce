@@ -174,10 +174,6 @@ public class StockConcurrencyTest extends ApplicationContext {
         executorService.shutdown();
 
         // 최종 재고 확인 및 검증
-        System.out.println("성공한 주문 수: " + successCount.get());
-        System.out.println("실패한 주문 수: " + failureCount.get());
-
-
         assertEquals(THREAD_COUNT, successCount.get() + failureCount.get(),
                 "총 처리된 주문 수가 스레드 수와 일치해야 합니다");
         List<StockEntity> lgGramStocks = stockJpaRepository.findAll().stream()

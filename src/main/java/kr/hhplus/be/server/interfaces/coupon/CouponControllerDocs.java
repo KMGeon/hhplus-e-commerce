@@ -59,7 +59,7 @@ public interface CouponControllerDocs {
                     )
             )
     })
-    kr.hhplus.be.server.support.ApiResponse<CouponResponse.CreateCouponResponse> createCoupon(
+    kr.hhplus.be.server.interfaces.ApiResponse<CouponResponse.CreateCouponResponse> createCoupon(
             @Parameter(
                     description = "쿠폰 생성 요청 정보",
                     required = true,
@@ -138,7 +138,7 @@ public interface CouponControllerDocs {
                     )
             )
     })
-    kr.hhplus.be.server.support.ApiResponse<Long> publishCoupon(
+    kr.hhplus.be.server.interfaces.ApiResponse<Long> publishCoupon(
             @Valid @Parameter(
                     description = "쿠폰 발행 요청 정보",
                     required = true,

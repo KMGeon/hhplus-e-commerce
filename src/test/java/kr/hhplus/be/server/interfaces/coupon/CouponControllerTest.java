@@ -67,7 +67,7 @@ class CouponControllerTest {
         long couponId = 100L;
         CouponRequest.Publish publishRequest = new CouponRequest.Publish(userId, couponId);
         
-        given(couponFacadeService.publishCoupon(any(CouponCriteria.PublishCriteria.class))).willReturn(userId);
+        given(couponFacadeService.publishCouponLock(any(CouponCriteria.PublishCriteria.class))).willReturn(userId);
 
         // when & then
         mockMvc.perform(post("/api/v1/coupon/publish")
@@ -76,7 +76,7 @@ class CouponControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value(userId));
         
-        verify(couponFacadeService).publishCoupon(any(CouponCriteria.PublishCriteria.class));
+        verify(couponFacadeService).publishCouponLock(any(CouponCriteria.PublishCriteria.class));
     }
     
     @Test
@@ -88,7 +88,7 @@ class CouponControllerTest {
         CouponRequest.Publish publishRequest = new CouponRequest.Publish(userId, couponId);
         
         String errorMessage = "쿠폰 발행 중 오류가 발생했습니다";
-        given(couponFacadeService.publishCoupon(any(CouponCriteria.PublishCriteria.class)))
+        given(couponFacadeService.publishCouponLock(any(CouponCriteria.PublishCriteria.class)))
                 .willThrow(new RuntimeException(errorMessage));
 
         // when & then

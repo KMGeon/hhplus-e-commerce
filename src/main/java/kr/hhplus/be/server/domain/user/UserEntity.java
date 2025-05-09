@@ -1,10 +1,8 @@
 package kr.hhplus.be.server.domain.user;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.BaseTimeEntity;
+import kr.hhplus.be.server.domain.support.BaseTimeEntity;
 import lombok.*;
-
-import java.math.BigDecimal;
 
 @Getter
 @ToString
@@ -18,12 +16,12 @@ public class UserEntity extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Embedded
-    private Point point;
 
     @Version
     private Long version;
 
+    @Embedded
+    private Point point;
 
     public static UserEntity createNewUser() {
         UserEntity user = new UserEntity();

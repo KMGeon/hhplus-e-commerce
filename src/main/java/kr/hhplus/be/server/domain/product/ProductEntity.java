@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.domain.product;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.BaseTimeEntity;
+import kr.hhplus.be.server.domain.support.BaseTimeEntity;
 import lombok.*;
 
 @Getter

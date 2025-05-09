@@ -12,7 +12,7 @@ public class ProductFetchStrategyFactory {
     private final FetchAllProductStrategy allStrategy;
     private final FetchProductByCategoryStrategy categoryStrategy;
 
-    public ProductFetchStrategy getStrategy(String categoryCode) {
+    public ProductFetchStrategy getStrategy(String categoryCode, int page, int size) {
         return CategoryEnum.validateCategoryCode(categoryCode)
                 .map(category -> {
                     categoryStrategy.setCategory(category.getCategoryCode());

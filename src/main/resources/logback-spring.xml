@@ -1,25 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- 콘솔 출력 설정 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{requestId:-}] [%X{clientIp:-}] [%X{httpMethod:-}] [%X{requestUri:-}] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 파일 출력 설정 -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>logs/hhplus.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>logs/hhplus.%d{yyyy-MM-dd}.log</fileNamePattern>
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{requestId:-}] [%X{clientIp:-}] [%X{httpMethod:-}] [%X{requestUri:-}] [%X{userAgent:-}] %-5level %logger{36} - %msg%n</pattern>
         </encoder>
     </appender>
 
-    <!-- 로그 레벨 설정 -->
     <logger name="kr.hhplus" level="INFO" />
     <logger name="org.springframework" level="INFO" />
     <logger name="org.hibernate" level="INFO" />

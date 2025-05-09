@@ -93,7 +93,7 @@ class StockServiceTest {
         when(stockRepository.updateStockDecreaseFifo(eq(orderId), eq("SKU002"), eq(5L))).thenReturn(5);
 
         // when
-        int result = stockService.decreaseStockPessimistic(orderId, stockCommand);
+        int result = stockService.decreaseStockLock(orderId, stockCommand);
 
         // then
         assertThat(result).isEqualTo(8); // 3 + 5 = 8 (총 업데이트된 재고 수)
@@ -105,13 +105,13 @@ class StockServiceTest {
     void 재고_복원_처리_성공() {
         // given
         Long orderId = 1000L;
-        doNothing().when(stockRepository).restoreStockByOrderId(orderId);
+        doNothing().when(stockRepository).restoreStockByOrderIds(List.of(orderId));
 
         // when
-        stockService.restoreStock(orderId);
+        stockService.restoreStock(List.of(orderId));
 
         // then
-        verify(stockRepository, times(1)).restoreStockByOrderId(orderId);
+        verify(stockRepository, times(1)).restoreStockByOrderIds(List.of(orderId));
     }
 
     private EnoughStockDTO createStockDTO(String skuId, Long ea, Long unitPrice) {

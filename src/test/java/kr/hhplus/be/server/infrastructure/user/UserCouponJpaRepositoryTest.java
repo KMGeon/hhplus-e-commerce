@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.infrastructure.user;
 
+import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.coupon.CouponEntity;
 import kr.hhplus.be.server.domain.user.userCoupon.CouponStatus;
 import kr.hhplus.be.server.domain.user.userCoupon.UserCouponEntity;
@@ -14,8 +15,7 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-class UserCouponJpaRepositoryTest {
+class UserCouponJpaRepositoryTest extends ApplicationContext {
 
     @Autowired
     private UserCouponJpaRepository userCouponJpaRepository;

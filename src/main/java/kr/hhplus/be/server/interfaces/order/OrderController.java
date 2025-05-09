@@ -3,7 +3,7 @@ package kr.hhplus.be.server.interfaces.order;
 import jakarta.validation.Valid;
 import kr.hhplus.be.server.application.order.OrderCriteria;
 import kr.hhplus.be.server.application.order.OrderFacadeService;
-import kr.hhplus.be.server.support.ApiResponse;
+import kr.hhplus.be.server.interfaces.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

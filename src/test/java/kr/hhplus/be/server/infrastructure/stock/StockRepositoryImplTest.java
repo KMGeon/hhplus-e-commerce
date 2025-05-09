@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.infrastructure.stock;
 
+import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.product.CategoryEnum;
 import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.stock.StockEntity;
@@ -9,19 +10,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-class StockRepositoryImplTest {
+class StockRepositoryImplTest extends ApplicationContext {
 
     @Autowired
     private StockRepositoryImpl stockRepository;

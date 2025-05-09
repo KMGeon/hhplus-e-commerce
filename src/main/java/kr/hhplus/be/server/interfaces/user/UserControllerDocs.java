@@ -8,7 +8,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
 
 @Tag(name = "user", description = "사용자 API")
@@ -53,7 +52,7 @@ public interface UserControllerDocs {
                     )
             )
     })
-    kr.hhplus.be.server.support.ApiResponse<UserResponse.User> getUserPoint(
+    kr.hhplus.be.server.interfaces.ApiResponse<UserResponse.User> getUserPoint(
             @Parameter(
                     description = "조회할 사용자의 ID",
                     required = true
@@ -115,7 +114,7 @@ public interface UserControllerDocs {
                     )
             )
     })
-    kr.hhplus.be.server.support.ApiResponse<UserResponse.User> chargeUserPoint(
+    kr.hhplus.be.server.interfaces.ApiResponse<UserResponse.User> chargeUserPoint(
             @Parameter(
                     description = "포인트 충전 요청 정보",
                     required = true

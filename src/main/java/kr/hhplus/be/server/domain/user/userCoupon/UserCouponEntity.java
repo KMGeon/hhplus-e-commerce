@@ -2,7 +2,7 @@ package kr.hhplus.be.server.domain.user.userCoupon;
 
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.BaseTimeEntity;
+import kr.hhplus.be.server.domain.support.BaseTimeEntity;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

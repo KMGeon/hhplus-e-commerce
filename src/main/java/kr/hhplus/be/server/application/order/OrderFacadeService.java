@@ -35,7 +35,13 @@ public class OrderFacadeService {
         List<StockInfo.Stock> getStocks = stockService.checkEaAndProductInfo(stockCommand);
         Long createOrderId = orderService.createOrder(getUser.userId(), toOrderCommand(getStocks, stockCommand));
 
-         stockService.decreaseStockPessimistic(createOrderId, stockCommand);
+         stockService.decreaseStockLock(createOrderId, stockCommand);
          return createOrderId;
+    }
+
+    public List<Long> republishUnpublishedEvents(){
+        List<Long> expireIds = orderService.updateExpireOrderStatus();
+        stockService.restoreStock(expireIds);
+        return expireIds;
     }
 }

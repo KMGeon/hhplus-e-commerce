@@ -4,7 +4,7 @@ import jakarta.validation.Valid;
 import kr.hhplus.be.server.domain.user.UserCommand;
 import kr.hhplus.be.server.domain.user.UserInfo;
 import kr.hhplus.be.server.domain.user.UserService;
-import kr.hhplus.be.server.support.ApiResponse;
+import kr.hhplus.be.server.interfaces.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 

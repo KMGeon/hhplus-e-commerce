@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.domain.stock;
 
 import jakarta.persistence.*;
-import kr.hhplus.be.server.domain.BaseTimeEntity;
+import kr.hhplus.be.server.domain.support.BaseTimeEntity;
 import kr.hhplus.be.server.domain.product.CategoryEnum;
 import lombok.*;
 
@@ -29,11 +29,8 @@ public class StockEntity extends BaseTimeEntity {
 
     private String skuId;
 
+    @Setter
     @Column(name = "order_id", nullable = true)
     private Long orderId;
-
-    public void setOrderId(Long orderId) {
-        this.orderId = orderId;
-    }
 
 }

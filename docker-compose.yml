@@ -1,7 +1,7 @@
 services:
   mysql:
     image: mysql:8.0
-#    platform: linux/arm64/v8
+    container_name: mysql
     ports:
       - "3306:3306"
     environment:
@@ -11,7 +11,79 @@ services:
       - MYSQL_DATABASE=hhplus
     volumes:
       - ./data/mysql/:/var/lib/mysql
+  master:
+    image: 'bitnami/redis:latest'
+    environment:
+      REDIS_REPLICATION_MODE: master
+      ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - redis_network
+    restart: always
 
+  slave-1:
+    image: 'bitnami/redis:latest'
+    environment:
+      REDIS_REPLICATION_MODE: slave
+      REDIS_MASTER_HOST: master
+      ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - redis_network
+
+  slave-2:
+    image: 'bitnami/redis:latest'
+    environment:
+      REDIS_REPLICATION_MODE: slave
+      REDIS_MASTER_HOST: master
+      ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - redis_network
+
+  slave-3:
+    image: 'bitnami/redis:latest'
+    environment:
+      REDIS_REPLICATION_MODE: slave
+      REDIS_MASTER_HOST: master
+      ALLOW_EMPTY_PASSWORD: "yes"
+    networks:
+      - redis_network
+
+  sentinel-1:
+    image: 'bitnami/redis-sentinel:latest'
+    environment:
+      REDIS_MASTER_HOST: master
+      REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS: 5000
+      REDIS_SENTINEL_FAILOVER_TIMEOUT: 5000
+    networks:
+      - redis_network
+
+  sentinel-2:
+    image: 'bitnami/redis-sentinel:latest'
+    environment:
+      REDIS_MASTER_HOST: master
+      REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS: 5000
+      REDIS_SENTINEL_FAILOVER_TIMEOUT: 5000
+    networks:
+      - redis_network
+
+  sentinel-3:
+    image: 'bitnami/redis-sentinel:latest'
+    environment:
+      REDIS_MASTER_HOST: master
+      REDIS_SENTINEL_DOWN_AFTER_MILLISECONDS: 5000
+      REDIS_SENTINEL_FAILOVER_TIMEOUT: 5000
+    networks:
+      - redis_network
+
+  haprxoy:
+    image: rafpe/docker-haproxy-rsyslog
+    ports:
+      - "80:80"
+      - "9000:9000"
+      - "5001:5001"
+    volumes:
+      - ./data/redis/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+    networks:
+      - redis_network
 networks:
-  default:
+  redis_network:
     driver: bridge
