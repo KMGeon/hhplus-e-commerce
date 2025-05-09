@@ -55,4 +55,9 @@ public class ProductRepositoryImpl implements ProductRepository {
         productCacheRepository.setHotProductsCacheLimit5(hotProductsCache);
     }
 
+    @Override
+    public void deleteHotProductsCache() {
+        productCacheRepository.deleteHotProductsCache();
+    }
+
 }

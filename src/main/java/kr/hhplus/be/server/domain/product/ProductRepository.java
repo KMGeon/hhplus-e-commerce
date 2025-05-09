@@ -17,4 +17,5 @@ public interface ProductRepository {
     List<ProductEntity> findAllBySkuIdIn(List<String> skuIds);
     List<HotProductQuery> findHotProductsCache();
     void setHotProductsCacheLimit5(List<HotProductQuery> hotProductsCache);
+    void deleteHotProductsCache();
 }

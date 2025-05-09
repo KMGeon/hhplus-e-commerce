@@ -29,4 +29,8 @@ public class ProductCacheRepository {
         }
         redisRepository.expire(HOT_PRODUCT_CACHE_NAME, HOT_PRODUCT_CACHE_EXPIRE_TIME);
     }
+
+    public void deleteHotProductsCache() {
+        redisRepository.delete(HOT_PRODUCT_CACHE_NAME);
+    }
 }
