@@ -1,4 +1,3 @@
-import org.springframework.boot.gradle.tasks.bundling.BootJar
 
 plugins {
 	java
@@ -66,8 +65,18 @@ dependencies {
 	asciidoctorExt("org.springframework.restdocs:spring-restdocs-asciidoctor")
 	testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 
+	// QueryDSL
+	implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
+	annotationProcessor("com.querydsl:querydsl-apt:5.0.0:jakarta")
+	annotationProcessor("jakarta.annotation:jakarta.annotation-api")
+	annotationProcessor("jakarta.persistence:jakarta.persistence-api")
+
+
 	// swagger
 	implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.7.0")
+
+	// gson
+	implementation("com.google.code.gson:gson:2.13.1")
 
 	// retry
 	implementation ("org.springframework.retry:spring-retry")
@@ -85,15 +94,4 @@ dependencies {
 tasks.withType<Test> {
 	useJUnitPlatform()
 	systemProperty("user.timezone", "UTC")
-}
-
-
-tasks {
-    bootJar {
-        archiveFileName.set("hhplus.jar")
-        mainClass.set("kr.hhplus.be.server.ServerApplication")
-    }
-    jar {
-        enabled = false
-    }
 }

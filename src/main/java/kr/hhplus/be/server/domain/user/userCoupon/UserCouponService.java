@@ -1,7 +1,6 @@
 package kr.hhplus.be.server.domain.user.userCoupon;
 
 import kr.hhplus.be.server.application.coupon.CouponCriteria;
-import kr.hhplus.be.server.infrastructure.redis.RedisRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Service;
 public class UserCouponService {
 
     private final UserCouponRepository userCouponRepository;
-    private final RedisRepository redisRepository;
 
     public Long publishOnlyIfFirstTime(CouponCriteria.PublishCriteria criteria) {
         Long userId = criteria.userId();
