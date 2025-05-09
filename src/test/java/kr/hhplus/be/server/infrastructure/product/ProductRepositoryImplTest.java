@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.infrastructure.product;
 
-import kr.hhplus.be.server.config.RepoContext;
+import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import org.junit.jupiter.api.DisplayName;
@@ -15,8 +15,7 @@ import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@RepoContext
-class ProductRepositoryImplTest {
+class ProductRepositoryImplTest extends ApplicationContext {
 
     @Autowired
     private ProductJpaRepository repository;

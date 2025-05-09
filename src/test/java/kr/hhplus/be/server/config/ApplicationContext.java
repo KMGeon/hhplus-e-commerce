@@ -10,6 +10,7 @@ import kr.hhplus.be.server.domain.user.UserService;
 import kr.hhplus.be.server.infrastructure.coupon.CouponJpaRepository;
 import kr.hhplus.be.server.infrastructure.order.OrderJpaRepository;
 import kr.hhplus.be.server.infrastructure.stock.StockJpaRepository;
+import kr.hhplus.be.server.infrastructure.user.UserCouponJpaRepository;
 import kr.hhplus.be.server.infrastructure.user.UserJpaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,6 +42,8 @@ public abstract class ApplicationContext {
     protected OrderJpaRepository orderJpaRepository;
     @Autowired
     protected PaymentFacadeService paymentFacadeService;
+    @Autowired
+    protected UserCouponJpaRepository userCouponJpaRepository;
 
 
     protected static final Long EXIST_USER = 1L;

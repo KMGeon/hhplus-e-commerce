@@ -25,6 +25,7 @@ import kr.hhplus.be.server.infrastructure.product.ProductJpaRepository;
 import kr.hhplus.be.server.infrastructure.stock.StockJpaRepository;
 import kr.hhplus.be.server.infrastructure.user.UserCouponJpaRepository;
 import kr.hhplus.be.server.infrastructure.user.UserJpaRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -41,60 +42,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
-
-public class IntegrationTest  extends ApplicationContext{
-
-    @Autowired
-    OrderFacadeService orderFacadeService;
-
-    @Autowired
-    private CouponFacadeService couponFacadeService;
-
-    @Autowired
-    private CouponService couponService;
-
-    @Autowired
-    private PaymentFacadeService paymentFacadeService;
-
-    @Autowired
-    private UserService userService;
-
-    @Autowired
-    private UserJpaRepository userJpaRepository;
-
-    @Autowired
-    private UserCouponJpaRepository couponJpaRepository;
-
-    @Autowired
-    private OrderJpaRepository orderJpaRepository;
-
-    @Autowired
-    private OrderItemJpaRepository orderItemJpaRepository;
-
-    @Autowired
-    private StockJpaRepository stockJpaRepository;
-
-    @Autowired
-    private ProductJpaRepository productRepository;
-
-    private List<StockEntity> testStocks;
-
-    private Long userId = 0L;
-
-    @BeforeEach
-    public void setUp() {
-        // 기존 데이터 정리
-        stockJpaRepository.deleteAll();
-        productRepository.deleteAll();
-        orderJpaRepository.deleteAll();
-        orderItemJpaRepository.deleteAll();
-        userJpaRepository.deleteAll();
-
-        UserEntity newUser = UserEntity.createNewUser();
-        userId = userJpaRepository.save(newUser).getId();
-        createTestData();
-    }
-
+public class IntegrationTest extends ApplicationContext {
 
     @Test
     @DisplayName("""
@@ -105,121 +53,117 @@ public class IntegrationTest  extends ApplicationContext{
             """)
     public void 시나리오_1() throws Exception {
         // 유저가 포인트를 충전한다.
-        userService.charge(new UserCommand.PointCharge(userId, 10000L));
+        userService.charge(new UserCommand.PointCharge(EXIST_USER, 1000L));
 
         // 쿠폰을 만든다.
         couponService.save(new CouponCommand.Create("생일 축하해요 쿠폰", "FIXED_AMOUNT", 10L, 1000L));
         // 유저가 쿠폰을 발급한다
-        couponFacadeService.publishCoupon(new CouponCriteria.PublishCriteria(userId, 1L));
+        couponFacadeService.publishCouponLock(new CouponCriteria.PublishCriteria(EXIST_USER, 1L));
 
 
         // 총 주문 금액 계산
         List<OrderCriteria.Item> items = List.of(
-                new OrderCriteria.Item("LG-GRAM-17", 1L),    // 104
-                new OrderCriteria.Item("SM-TAB-S9", 2L),     // 103 * 2 = 206
-                new OrderCriteria.Item("AP-MB-AIR-M2", 3L)   // 101 * 3 = 303
+                new OrderCriteria.Item("A-0001-0001", 1L),  // 2000
+                new OrderCriteria.Item("A-0001-0002", 2L),  // 2100 * 2 = 4200
+                new OrderCriteria.Item("A-0001-0003", 3L)   // 2200 * 3 = 6600
+                // 합계: 2000 + 4200 + 6600 = 12800
         );
 
 
         // 유저가 주문을 생성한다.
-        Long orderId = orderFacadeService.createOrder(new OrderCriteria.Order(userId, items));
+        Long orderId = orderFacadeService.createOrder(new OrderCriteria.Order(EXIST_USER, items));
 
         // 유저가 주문을 결제한다.
-        paymentFacadeService.payment(new PaymentCriteria.Pay(userId, orderId, 1L));
+        paymentFacadeService.payment(new PaymentCriteria.Pay(EXIST_USER, orderId, 1L));
 
-        UserEntity userEntity = userJpaRepository.findById(userId)
+        UserEntity userEntity = userJpaRepository.findById(EXIST_USER)
                 .orElseThrow();
-        UserCouponEntity userCouponEntity = couponJpaRepository.findById(1L)
+        UserCouponEntity userCouponEntity = userCouponJpaRepository.findById(1L)
                 .orElseThrow();
         OrderEntity orderEntity = orderJpaRepository.findById(orderId)
                 .orElseThrow();
 
         // 결제 후 검증
-        assertEquals(9187, userEntity.getPoint());
+        assertEquals(89200, userEntity.getPoint(), "기존 100_000원 + 1_000원 포인트 충전 - 12_800원 상품가격 + 1_000원 쿠폰 사용");
         assertEquals(CouponStatus.USED, userCouponEntity.getCouponStatus(), "쿠폰 상태는 USED여야 함");
         assertEquals(OrderStatus.PAID, orderEntity.getStatus(), "주문 상태는 PAID여야 함");
-        assertEquals(new BigDecimal("1813.00"), orderEntity.getTotalPrice());
+        assertEquals(new BigDecimal("12800.00"), orderEntity.getTotalPrice());
         assertEquals(new BigDecimal("1000.00"), orderEntity.getDiscountAmount());
     }
 
+    @Test
+    @DisplayName("""
+             1. 유저가 포인트를 충전
+             2. 주문을 생성한다.
+             3. 이후 주문을 결제한다. (쿠폰 X)
+            """)
+    public void 시나리오_2() throws Exception {
+        // 유저가 포인트를 충전한다.
+        userService.charge(new UserCommand.PointCharge(EXIST_USER, 1000L));
 
-    private void createTestData() {
-        // 상품 데이터 먼저 생성
-        createProductData();
+        List<OrderCriteria.Item> items = List.of(
+                new OrderCriteria.Item("A-0001-0001", 1L),  // 2000
+                new OrderCriteria.Item("A-0001-0002", 2L),  // 2100 * 2 = 4200
+                new OrderCriteria.Item("A-0001-0003", 3L)   // 2200 * 3 = 6600
+                // 합계: 2000 + 4200 + 6600 = 12800
+        );
 
-        // 다양한 SKU ID와 카테고리로 재고 생성
-        testStocks = new ArrayList<>();
 
-        // iPhone 15 Pro 재고 10개 (3개는 이미 판매됨)
-        createStocks("AP-IP15-PRO", CategoryEnum.APPLE, 10, 3);
+        // 유저가 주문을 생성한다.
+        Long orderId = orderFacadeService.createOrder(new OrderCriteria.Order(EXIST_USER, items));
 
-        // MacBook Air M2 재고 5개 (1개는 이미 판매됨)
-        createStocks("AP-MB-AIR-M2", CategoryEnum.APPLE, 5, 1);
+        // 유저가 주문을 결제한다.
+        paymentFacadeService.payment(new PaymentCriteria.Pay(EXIST_USER, orderId, null));
 
-        // Galaxy S24 Ultra 재고 15개 (5개는 이미 판매됨)
-        createStocks("SM-S24-ULTRA", CategoryEnum.SAMSUNG, 15, 5);
+        UserEntity userEntity = userJpaRepository.findById(EXIST_USER)
+                .orElseThrow();
+        OrderEntity orderEntity = orderJpaRepository.findById(orderId)
+                .orElseThrow();
 
-        // Galaxy Tab S9 재고 7개 (2개는 이미 판매됨)
-        createStocks("SM-TAB-S9", CategoryEnum.SAMSUNG, 7, 2);
-
-        // LG Gram 17 재고 6개 (모두 판매 가능)
-        createStocks("LG-GRAM-17", CategoryEnum.LG, 6, 0);
-
-        // 모든 재고 저장
-        testStocks = stockJpaRepository.saveAll(testStocks);
+        // 결제 후 검증
+        assertEquals(88200, userEntity.getPoint(), "기존 100_000원 + 1_000원 포인트 충전 - 12_800원 상품가격 + 1_000원 쿠폰 사용");
+        assertEquals(OrderStatus.PAID, orderEntity.getStatus(), "주문 상태는 PAID여야 함");
+        assertEquals(new BigDecimal("12800.00"), orderEntity.getTotalPrice());
+        assertEquals(new BigDecimal("0.00"), orderEntity.getDiscountAmount());
     }
 
-    private void createProductData() {
-        // 상품 데이터 생성
-        List<ProductEntity> products = new ArrayList<>();
-
-        products.add(ProductEntity.builder()
-                .productName("iPhone 15 Pro")
-                .category(CategoryEnum.APPLE)
-                .skuId("AP-IP15-PRO")
-                .unitPrice(300L)
-                .build());
-
-        products.add(ProductEntity.builder()
-                .productName("MacBook Air M2")
-                .category(CategoryEnum.APPLE)
-                .skuId("AP-MB-AIR-M2")
-                .unitPrice(301L)
-                .build());
-
-        products.add(ProductEntity.builder()
-                .productName("Galaxy S24 Ultra")
-                .category(CategoryEnum.SAMSUNG)
-                .skuId("SM-S24-ULTRA")
-                .unitPrice(302L)
-                .build());
-
-        products.add(ProductEntity.builder()
-                .productName("Galaxy Tab S9")
-                .category(CategoryEnum.SAMSUNG)
-                .skuId("SM-TAB-S9")
-                .unitPrice(303L)
-                .build());
-
-        products.add(ProductEntity.builder()
-                .productName("LG Gram 17")
-                .category(CategoryEnum.LG)
-                .skuId("LG-GRAM-17")
-                .unitPrice(304L)
-                .build());
-
-        productRepository.saveAll(products);
+    @Test
+    @DisplayName("""
+            1. 유저가 포인트를 충전한다.
+            2. 주문을 생성한다.
+            3. 결제를 처리한다.
+                - 결제 과정에서 존재하지 않는 쿠폰을 기입한다.
+                - 실패한다.
+            """)
+    public void 시나리오_3() throws Exception{
+        userService.charge(new UserCommand.PointCharge(EXIST_USER, 1000L));
+        Long orderId = createOrder(EXIST_USER);
+        Assertions.assertThatThrownBy(() -> paymentFacadeService.payment(new PaymentCriteria.Pay(EXIST_USER, orderId, 1L)))
+                        .isInstanceOf(IllegalArgumentException.class)
+                                .hasMessage("사용자 쿠폰을 찾을 수 없습니다.");
     }
 
-    private void createStocks(String skuId, CategoryEnum category, int totalCount, int soldCount) {
-        for (int i = 0; i < totalCount; i++) {
-            StockEntity stock = StockEntity.builder()
-                    .skuId(skuId)
-                    .category(category)
-                    .orderId(i < soldCount ? 1000L + i : null)  // 판매된 상품은 주문 ID 설정
-                    .build();
+    @Test
+    @DisplayName("""
+            1. 유저가 포인트가 없다.
+            2. 주문을 생성한다.
+            3. 주문을 결제한다.
+                3-1. 결제가 처리되면 안된다.
+            """)
+    public void 시나리오_4() throws Exception{
+        UserEntity getUser = userJpaRepository.save(UserEntity.createNewUser());
+        Long orderId = createOrder(getUser.getId());
+        Assertions.assertThatThrownBy(() -> paymentFacadeService.payment(new PaymentCriteria.Pay(getUser.getId(), orderId, null)))
+                        .isInstanceOf(IllegalStateException.class);
+    }
 
-            testStocks.add(stock);
-        }
+    private Long createOrder(Long userId) {
+        List<OrderCriteria.Item> items = List.of(
+                new OrderCriteria.Item("A-0001-0001", 1L),  // 2000
+                new OrderCriteria.Item("A-0001-0002", 2L),  // 2100 * 2 = 4200
+                new OrderCriteria.Item("A-0001-0003", 3L)   // 2200 * 3 = 6600
+                // 합계: 2000 + 4200 + 6600 = 12800
+        );
+        return orderFacadeService.createOrder(new OrderCriteria.Order(userId, items));
     }
 }
