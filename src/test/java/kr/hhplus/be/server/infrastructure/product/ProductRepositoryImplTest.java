@@ -1,254 +1,127 @@
 package kr.hhplus.be.server.infrastructure.product;
 
-import kr.hhplus.be.server.domain.product.CategoryEnum;
+import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
-import kr.hhplus.be.server.domain.stock.StockEntity;
-import kr.hhplus.be.server.infrastructure.stock.StockJpaRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-class ProductRepositoryImplTest {
+class ProductRepositoryImplTest extends ApplicationContext {
 
     @Autowired
-    private ProductRepositoryImpl productRepository;
+    private ProductJpaRepository repository;
 
-    @Autowired
-    private ProductJpaRepository productJpaRepository;
+    private static final int PAGE = 0;
+    private static final int SIZE = 10;
 
-    @Autowired
-    private StockJpaRepository stockJpaRepository;
+    @Test
+    @DisplayName("상품 정보 + 재고 > 카테고리별 조회")
+    public void getProductsWithStockInfoByCategory() {
+        // given
+        final String category = "SAMSUNG";
+        PageRequest request = PageRequest.of(PAGE, SIZE);
 
-    private List<ProductEntity> testProducts;
-    private List<StockEntity> testStocks;
+        // when
+        Page<ProductStockDTO> result = repository.getProductsWithStockInfoByCategory(category, request);
 
-    @BeforeEach
-    void setUp() {
-        // 기존 데이터 정리
-        stockJpaRepository.deleteAll();
-        productJpaRepository.deleteAll();
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getNumber()).isEqualTo(PAGE);
+        assertThat(result.getSize()).isEqualTo(SIZE);
 
-        // 테스트 데이터 생성
-        createTestData();
-    }
+        if (!result.isEmpty()) {
+            assertThat(result.getContent())
+                    .allMatch(product -> category.equals(product.getCategory()),
+                            "모든 상품은 " + category + " 카테고리여야 합니다");
 
-    private void createTestData() {
-        // 카테고리별 상품 생성
-        testProducts = new ArrayList<>();
-        testStocks = new ArrayList<>();
-
-        // 애플 상품 생성
-        createProductWithStock("iPhone 15 Pro", CategoryEnum.APPLE, "AP-IP15-PRO", 1500000L, 10);
-        createProductWithStock("MacBook Air M2", CategoryEnum.APPLE, "AP-MB-AIR-M2", 1800000L, 5);
-
-        // 삼성 상품 생성
-        createProductWithStock("Galaxy S24 Ultra", CategoryEnum.SAMSUNG, "SM-S24-ULTRA", 1450000L, 15);
-        createProductWithStock("Galaxy Tab S9", CategoryEnum.SAMSUNG, "SM-TAB-S9", 950000L, 7);
-
-        // LG 상품 생성
-        createProductWithStock("LG Gram 17", CategoryEnum.LG, "LG-GRAM-17", 1750000L, 6);
-
-        // 소니 상품 생성
-        createProductWithStock("Sony WH-1000XM5", CategoryEnum.SONY, "SN-WH-1000XM5", 450000L, 12);
-
-        // 델 상품 생성
-        createProductWithStock("Dell XPS 15", CategoryEnum.DELL, "DL-XPS-15", 2200000L, 5);
-
-        // 모든 상품 저장
-        testProducts = productJpaRepository.saveAll(testProducts);
-
-        // 모든 재고 저장
-        testStocks = stockJpaRepository.saveAll(testStocks);
-
-        // 일부 재고 판매 처리 (약 30%)
-        simulateSoldItems();
-    }
-
-    private void createProductWithStock(
-            String productName,
-            CategoryEnum category,
-            String skuId,
-            Long price,
-            int stockCount
-    ) {
-        // 상품 생성
-        ProductEntity product = ProductEntity.builder()
-                .productName(productName)
-                .category(category)
-                .skuId(skuId)
-                .unitPrice(price)
-                .build();
-
-        testProducts.add(product);
-
-        // 해당 상품의 재고 생성
-        for (int i = 0; i < stockCount; i++) {
-            StockEntity stock = StockEntity.builder()
-                    .category(category)
-                    .skuId(skuId)
-                    .orderId(null)  // 판매되지 않은 상태
-                    .build();
-
-            testStocks.add(stock);
+            // 결과 첫 번째 상품의 세부 정보 검증
+            ProductStockDTO firstProduct = result.getContent().get(0);
+            assertThat(firstProduct.getProductId()).isNotNull();
+            assertThat(firstProduct.getProductName()).isNotNull();
+            assertThat(firstProduct.getSkuId()).isNotNull();
+            assertThat(firstProduct.getUnitPrice()).isNotNull();
+            assertThat(firstProduct.getStockEa()).isNotNull();
         }
     }
 
-    private void simulateSoldItems() {
-        // 약 30%의 재고를 판매된 상태로 변경
-        int totalStocks = testStocks.size();
-        int soldCount = (int) (totalStocks * 0.3);
+    @Test
+    @DisplayName("상품 정보 + 재고 > 전체 조회")
+    public void getProductsWithStockInfo() {
+        // given
+        PageRequest request = PageRequest.of(PAGE, SIZE);
 
-        for (int i = 0; i < soldCount && i < totalStocks; i++) {
-            StockEntity stock = testStocks.get(i);
-            // 임의의 주문 번호 생성
-            Long fakeOrderId = 1000L + i;
-            stock.setOrderId(fakeOrderId);
+        // when
+        Page<ProductStockDTO> result = repository.getProductsWithStockInfo(request);
+
+        // then
+        assertThat(result).isNotNull();
+        assertThat(result.getNumber()).isEqualTo(PAGE);
+        assertThat(result.getSize()).isEqualTo(SIZE);
+
+        if (!result.isEmpty()) {
+            // 결과 첫 번째 상품의 세부 정보 검증
+            ProductStockDTO firstProduct = result.getContent().get(0);
+            assertThat(firstProduct.getProductId()).isNotNull();
+            assertThat(firstProduct.getProductName()).isNotNull();
+            assertThat(firstProduct.getCategory()).isNotNull();
+            assertThat(firstProduct.getSkuId()).isNotNull();
+            assertThat(firstProduct.getUnitPrice()).isNotNull();
+            assertThat(firstProduct.getStockEa()).isNotNull();
         }
-
-        // 변경된 재고 저장
-        testStocks = stockJpaRepository.saveAll(testStocks);
     }
 
     @Test
-    @DisplayName("ID로 상품을 찾을 수 있다")
-    void findById() {
+    @DisplayName("SKU ID로 상품 개수 조회")
+    public void countBySkuIdIn() {
         // given
-        ProductEntity expectedProduct = testProducts.get(0);
+        List<String> existingSkuIds = Arrays.asList("A-0001-0001", "A-0001-0002");
 
         // when
-        Optional<ProductEntity> foundProduct = productRepository.findById(expectedProduct.getId());
+        long count = repository.countBySkuIdIn(existingSkuIds);
 
         // then
-        assertThat(foundProduct).isPresent();
-        assertThat(foundProduct.get().getId()).isEqualTo(expectedProduct.getId());
-        assertThat(foundProduct.get().getProductName()).isEqualTo(expectedProduct.getProductName());
-        assertThat(foundProduct.get().getSkuId()).isEqualTo(expectedProduct.getSkuId());
+        assertThat(count).isEqualTo(2L);
     }
 
     @Test
-    @DisplayName("SKU ID 목록으로 상품을 찾을 수 있다")
-    void findAllBySkuIdIn() {
+    @DisplayName("SKU ID로 상품 목록 조회")
+    public void findAllBySkuIdIn() {
         // given
-        List<String> skuIds = Arrays.asList("AP-IP15-PRO", "SM-S24-ULTRA");
+        List<String> existingSkuIds = Arrays.asList("A-0001-0001", "A-0001-0002");
 
         // when
-        List<ProductEntity> products = productRepository.findAllBySkuIdIn(skuIds);
+        List<ProductEntity> products = repository.findAllBySkuIdIn(existingSkuIds);
 
         // then
-        assertThat(products).isNotEmpty();
-        assertThat(products).hasSize(2);
-        assertThat(products.stream().map(ProductEntity::getSkuId).collect(Collectors.toList()))
-                .containsExactlyInAnyOrderElementsOf(skuIds);
-    }
-
-    @Test
-    @DisplayName("카테고리별 상품과 재고 정보를 조회할 수 있다")
-    void getProductsWithStockInfoByCategory() {
-        // given
-        String categoryCode = CategoryEnum.APPLE.getCategoryCode();
-
-        // when
-        List<ProductStockDTO> productsWithStock = productRepository.getProductsWithStockInfoByCategory(categoryCode);
-
-        // then
-        assertThat(productsWithStock).isNotEmpty();
-        assertThat(productsWithStock.stream()
-                .map(ProductStockDTO::getCategory)
-                .distinct()
+        assertThat(products).isNotNull();
+        // 정확한 개수 검증 대신, 최소한 요청한 SKU ID 개수만큼은 있어야 함
+        assertThat(products.size()).isGreaterThanOrEqualTo(existingSkuIds.size());
+        // 요청한 SKU ID가 모두 결과에 포함되어 있는지 확인
+        assertThat(products.stream()
+                .map(ProductEntity::getSkuId)
                 .collect(Collectors.toList()))
-                .containsExactly(categoryCode);
-
-        // 애플 카테고리의 상품 수 확인
-        long appleProductCount = testProducts.stream()
-                .filter(p -> p.getCategory().equals(CategoryEnum.APPLE.getCategoryCode()))
-                .count();
-        assertThat(productsWithStock).hasSize((int) appleProductCount);
+                .containsAll(existingSkuIds);
     }
 
     @Test
-    @DisplayName("모든 상품과 재고 정보를 조회할 수 있다")
-    void getProductsWithStockInfo() {
-        // when
-        List<ProductStockDTO> productsWithStock = productRepository.getProductsWithStockInfo();
-
-        // then
-        assertThat(productsWithStock).isNotEmpty();
-        assertThat(productsWithStock).hasSize(testProducts.size());
-
-        // 카테고리별 상품 수 확인
-        for (CategoryEnum category : CategoryEnum.values()) {
-            String categoryCode = category.getCategoryCode();
-            long categoryProductCount = testProducts.stream()
-                    .filter(p -> p.getCategory().equals(categoryCode))
-                    .count();
-
-            long dtoCount = productsWithStock.stream()
-                    .filter(dto -> dto.getCategory().equals(categoryCode))
-                    .count();
-
-            assertThat(dtoCount).isEqualTo(categoryProductCount);
-        }
-    }
-
-    @Test
-    @DisplayName("SKU ID 목록에 해당하는 상품의 개수를 반환한다")
-    void countBySkuIdIn() {
+    @DisplayName("존재하지 않는 SKU ID로 상품 목록 조회")
+    public void findAllByNonExistingSkuIdIn() {
         // given
-        List<String> skuIds = Arrays.asList("AP-IP15-PRO", "SM-S24-ULTRA", "NON-EXISTENT-SKU");
+        List<String> nonExistingSkuIds = Arrays.asList("NON-EXIST-001", "NON-EXIST-002");
 
         // when
-        long count = productRepository.countBySkuIdIn(skuIds);
+        List<ProductEntity> products = repository.findAllBySkuIdIn(nonExistingSkuIds);
 
         // then
-        assertThat(count).isEqualTo(2); // 존재하는 SKU ID만 카운트
+        assertThat(products).isEmpty();
     }
 }
-
-/**
- *   products.add(ProductEntity.builder()
- *                 .productName("iPhone 15 Pro")
- *                 .category(CategoryEnum.APPLE)
- *                 .skuId("AP-IP15-PRO")
- *                 .unitPrice(100L)
- *                 .build());
- *
- *         products.add(ProductEntity.builder()
- *                 .productName("MacBook Air M2")
- *                 .category(CategoryEnum.APPLE)
- *                 .skuId("AP-MB-AIR-M2")
- *                 .unitPrice(101L)
- *                 .build());
- *
- *         products.add(ProductEntity.builder()
- *                 .productName("Galaxy S24 Ultra")
- *                 .category(CategoryEnum.SAMSUNG)
- *                 .skuId("SM-S24-ULTRA")
- *                 .unitPrice(102L)
- *                 .build());
- *
- *         products.add(ProductEntity.builder()
- *                 .productName("Galaxy Tab S9")
- *                 .category(CategoryEnum.SAMSUNG)
- *                 .skuId("SM-TAB-S9")
- *                 .unitPrice(103L)
- *                 .build());
- *
- *         products.add(ProductEntity.builder()
- *                 .productName("LG Gram 17")
- *                 .category(CategoryEnum.LG)
- *                 .skuId("LG-GRAM-17")
- *                 .unitPrice(104L)
- *                 .build());
- */

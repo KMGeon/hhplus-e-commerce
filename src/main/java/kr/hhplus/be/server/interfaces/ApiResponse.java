@@ -1,5 +1,6 @@
-package kr.hhplus.be.server.support;
+package kr.hhplus.be.server.interfaces;
 
+import kr.hhplus.be.server.support.exception.ErrorCode;
 import lombok.*;
 
 @ToString

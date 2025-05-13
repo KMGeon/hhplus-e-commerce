@@ -15,6 +15,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Optional;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -27,56 +30,34 @@ public class PaymentFacadeService {
     private final CouponService couponService;
     private final StockService stockService;
 
-    private static final int MAX_RETRY = 10;
 
     @Transactional
     public void payment(PaymentCriteria.Pay criteria) {
         long orderId = criteria.orderId();
         long userId = criteria.userId();
-        Long userCouponId = criteria.userCouponId();
+        Optional<Long> userCouponId = Optional.ofNullable(criteria.userCouponId());
 
         try {
             OrderInfo.OrderPaymentInfo orderInfo = orderService.isAvailableOrder(orderId);
 
-            BigDecimal discountAmount = BigDecimal.ZERO;
-            if (userCouponId != null) {
-                Long couponId = userCouponService.checkUserCoupon(userCouponId, orderId);
-                discountAmount = couponService.calculateDiscountAmount(couponId, orderInfo.totalPrice());
-                userCouponService.useCoupon(userCouponId, orderId);
-            }
+            BigDecimal discountAmount = userCouponId
+                    .map(couponId -> {
+                        Long couponIdValue = userCouponService.checkUserCoupon(couponId, userId);
+                        BigDecimal discount = couponService.calculateDiscountAmount(couponIdValue, orderInfo.totalPrice());
+                        userCouponService.useCoupon(couponId, orderId);
+                        return discount;
+                    })
+                    .orElse(BigDecimal.ZERO);
 
             BigDecimal finalTotalPrice = orderService.applyToDisCount(orderId, discountAmount);
-
-            for (int attempt = 0; attempt < MAX_RETRY; attempt++) {
-                try {
-                    userService.usePoint(userId, finalTotalPrice);
-                    break;
-                } catch (ObjectOptimisticLockingFailureException | OptimisticLockException e) {
-                    if (attempt == MAX_RETRY - 1) {
-                        log.error("결제 실패 - 낙관적 락 재시도 최대 횟수({})를 초과: orderId={}, userId={}",
-                                MAX_RETRY, orderId, userId);
-                        throw e;
-                    }
-
-                    log.warn("결제 재시도 {}회 실패 (낙관적 락 충돌): orderId={}, userId={}",
-                            attempt + 1, orderId, userId);
-
-                    long backoffMs = (long) Math.pow(2, attempt) * 100L;
-                    try {
-                        Thread.sleep(backoffMs);
-                    } catch (InterruptedException ie) {
-                        Thread.currentThread().interrupt();
-                        throw new IllegalStateException("스레드 인터럽트 발생", ie);
-                    }
-                }
-            }
-
+            userService.usePoint(userId, finalTotalPrice);
             paymentService.paymentProcessByBoolean(orderId, userId, finalTotalPrice, true);
+
             log.info("결제 성공: orderId={}, userId={}, amount={}", orderId, userId, finalTotalPrice);
         } catch (Exception e) {
-            log.error("결제 실패: orderId={}, userId={}, 원인={}", orderId, userId, e.getMessage());
+            log.error("결제 실패: orderId={}, userId={}, 원인={}", orderId, userId, e.getMessage(), e);
             orderService.restoreOrderStatusCancel(orderId);
-            stockService.restoreStock(orderId);
+            stockService.restoreStock(List.of(orderId));
             paymentService.paymentProcessByBoolean(orderId, userId, BigDecimal.ZERO, false);
             throw e;
         }

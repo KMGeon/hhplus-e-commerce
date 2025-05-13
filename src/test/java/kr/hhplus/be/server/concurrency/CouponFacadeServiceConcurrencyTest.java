@@ -23,42 +23,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
 
-    @Autowired
-    private CouponFacadeService couponFacadeService;
-
-    @Autowired
-    private CouponRepository couponRepository;
-
-    @Autowired
-    private UserJpaRepository userJpaRepository;
-
-    @Autowired
-    private CouponJpaRepository couponJpaRepository;
-
-
-    private Long couponId = 1L;
-
-    @BeforeEach
-    public void setUp() {
-        CouponEntity coupon = CouponEntity.createCoupon("생일기념 쿠폰", "FIXED_AMOUNT", 10, 1000, LocalDateTime.now());
-        couponJpaRepository.save(coupon);
-
-        UserEntity newUser1 = UserEntity.createNewUser();
-        UserEntity newUser2 = UserEntity.createNewUser();
-        UserEntity newUser3 = UserEntity.createNewUser();
-        UserEntity newUser4 = UserEntity.createNewUser();
-        UserEntity newUser5 = UserEntity.createNewUser();
-        UserEntity newUser6 = UserEntity.createNewUser();
-        UserEntity newUser7 = UserEntity.createNewUser();
-        UserEntity newUser8 = UserEntity.createNewUser();
-        UserEntity newUser9 = UserEntity.createNewUser();
-        UserEntity newUser10 = UserEntity.createNewUser();
-
-        List<UserEntity> newUser11 = List.of(newUser1, newUser2, newUser3, newUser4, newUser5, newUser6, newUser7, newUser8, newUser9, newUser10);
-        userJpaRepository.saveAll(newUser11);
-
-    }
-
     @Test
     void 잔여_10개쿠폰_5명이_동시에요청하기() throws InterruptedException {
         // given
@@ -66,10 +30,9 @@ class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
         ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
         CountDownLatch latch = new CountDownLatch(threadCount);
 
-        CouponEntity initialCoupon = couponJpaRepository.findById(couponId)
-                .orElseThrow(()-> new RuntimeException("쿠폰을 찾을 수 없습니다."));
+        CouponEntity initialCoupon = couponJpaRepository.findById(1L)
+                .orElseThrow(() -> new RuntimeException("쿠폰을 찾을 수 없습니다."));
         long initialQuantity = initialCoupon.getRemainQuantity();
-
         assertThat(initialQuantity).isGreaterThanOrEqualTo(1);
 
         // when
@@ -78,11 +41,11 @@ class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
 
         for (int i = 0; i < threadCount; i++) {
             Long userId = (long) i;
-            CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, couponId);
+            CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, 1L);
 
             executorService.submit(() -> {
                 try {
-                    couponFacadeService.publishCouponPessimistic(criteria);
+                    couponFacadeService.publishCouponLock(criteria);
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failureCount.incrementAndGet();
@@ -96,7 +59,7 @@ class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
         executorService.shutdown();
 
         // then
-        CouponEntity updatedCoupon = couponRepository.findCouponById(couponId);
+        CouponEntity updatedCoupon = couponRepository.findCouponById(1L);
         long remainQuantity = updatedCoupon.getRemainQuantity();
         assertThat(remainQuantity).isEqualTo(initialQuantity - successCount.get());
         assertThat(successCount.get() + failureCount.get()).isEqualTo(threadCount);

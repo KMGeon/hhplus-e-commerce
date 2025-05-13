@@ -1,11 +1,16 @@
 package kr.hhplus.be.server.domain.coupon;
 
+import kr.hhplus.be.server.domain.support.DistributedLock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import static kr.hhplus.be.server.domain.support.RedisLockKeyStore.DECREASE_COUPON_LOCK;
+
 
 @Service
 @RequiredArgsConstructor
@@ -25,14 +30,11 @@ public class CouponService {
         return CouponInfo.CreateInfo.of(saveCoupon.getId());
     }
 
-    public void decreaseCouponQuantityAfterCheck(long couponId) {
-        CouponEntity coupon = couponRepository.findCouponById(couponId);
-        coupon.validateForPublish();
-        coupon.decreaseQuantity();
-    }
 
-    public void decreaseCouponQuantityAfterCheckPessimistic(long couponId) {
-        CouponEntity coupon = couponRepository.findCouponByIdWithPessimisticLock(couponId);
+    @DistributedLock(key = DECREASE_COUPON_LOCK)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void decreaseCouponQuantityAfterCheckLock(long couponId) {
+        CouponEntity coupon = couponRepository.findCouponById(couponId);
         coupon.validateForPublish();
         coupon.decreaseQuantity();
     }

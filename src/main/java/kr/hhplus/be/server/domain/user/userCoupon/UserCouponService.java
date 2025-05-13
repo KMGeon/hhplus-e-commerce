@@ -20,8 +20,7 @@ public class UserCouponService {
         if (userCoupon != null)
             throw new RuntimeException(String.format("이미 발행된 쿠폰입니다. userId: %d, couponId: %d", userId, couponId));
 
-        return userCouponRepository.save(UserCouponEntity.publishCoupon(userId, couponId))
-                .getUserId();
+        return userCouponRepository.save(UserCouponEntity.publishCoupon(userId, couponId)).getUserId();
     }
 
     public Long checkUserCoupon(Long userCouponId, Long userId) {
@@ -34,4 +33,5 @@ public class UserCouponService {
         userCouponRepository.findById(userCouponId)
                 .use(orderId);
     }
+
 }

@@ -1,6 +1,8 @@
 package kr.hhplus.be.server.domain.order;
 
 
+import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
+import kr.hhplus.be.server.domain.product.CategoryEnum;
 import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,6 +12,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -99,16 +103,19 @@ class OrderServiceTest {
         String startPath = "0418";
         String endPath = "0421";
 
-        List<HotProductDTO> mockProducts = Arrays.asList(
-                createHotProductDTO("SKU001", 10L),
-                createHotProductDTO("SKU002", 8L)
+        List<HotProductQuery> mockProducts = Arrays.asList(
+                new HotProductQuery("SKU001", CategoryEnum.LG, "상품1", 10L),
+                new HotProductQuery("SKU002", CategoryEnum.LG, "상품2", 10L),
+                new HotProductQuery("SKU003", CategoryEnum.LG, "상품3", 10L),
+                new HotProductQuery("SKU004", CategoryEnum.LG, "상품4", 10L),
+                new HotProductQuery("SKU005", CategoryEnum.LG, "상품5", 10L)
         );
 
         when(orderCoreRepository.findHotProducts(any(), any())).thenReturn(mockProducts);
+        LocalDateTime current = LocalDateTime.now();
+        List<HotProductQuery> result = orderService.getHotProducts(current);
 
-        List<HotProductDTO> result = orderService.getHotProducts();
-
-        assertThat(result).hasSize(2);
+        assertThat(result).hasSize(5);
         assertThat(result).isEqualTo(mockProducts);
 
         ArgumentCaptor<String> startPathCaptor = ArgumentCaptor.forClass(String.class);
@@ -116,26 +123,4 @@ class OrderServiceTest {
         verify(orderCoreRepository).findHotProducts(startPathCaptor.capture(), endPathCaptor.capture());
     }
 
-    private HotProductDTO createHotProductDTO(String skuId, Long orderCount) {
-        return new HotProductDTO() {
-            @Override
-            public String getSkuId() {
-                return skuId;
-            }
-
-            @Override
-            public Long getOrderCount() {
-                return orderCount;
-            }
-
-            @Override
-            public boolean equals(Object obj) {
-                if (this == obj) return true;
-                if (obj == null || getClass() != obj.getClass()) return false;
-                HotProductDTO other = (HotProductDTO) obj;
-                return getSkuId().equals(other.getSkuId()) &&
-                        getOrderCount().equals(other.getOrderCount());
-            }
-        };
-    }
 }
