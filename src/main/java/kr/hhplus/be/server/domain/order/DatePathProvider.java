@@ -10,19 +10,14 @@ public class DatePathProvider {
     public static String toPath(LocalDateTime dateTime) {
         // 기준일시 설정 (2025-01-01 00:00:00)
         LocalDateTime baseDateTime = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
-
         long days = ChronoUnit.DAYS.between(baseDateTime, dateTime);
-
-
         /** 36진수로 변환하고 5자리로 패딩 **/
         return convertToBase36(days);
     }
 
     public static LocalDateTime toDateTime(String path) {
-        if (path.length() != PATH_SIZE) {
+        if (path.length() != PATH_SIZE)
             throw new IllegalArgumentException("Invalid path length");
-        }
-
 
         /** 36진수로 변환된 값을 10진수로 변환하는 부분 **/
         long days = convertFromBase36(path);
