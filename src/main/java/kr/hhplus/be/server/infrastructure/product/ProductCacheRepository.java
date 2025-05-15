@@ -22,15 +22,15 @@ public class ProductCacheRepository {
     }
 
     public void setHotProductsCacheLimit5(List<HotProductQuery> hotProductsCache) {
-        redisRepository.delete(HOT_PRODUCT_CACHE_NAME);
+        redisRepository.delete(List.of(HOT_PRODUCT_CACHE_NAME));
         for (int i = 0; i < hotProductsCache.size(); i++) {
-            float score = hotProductsCache.size() - i;
+            long score = (long) hotProductsCache.size() - i;
             redisRepository.addToSortedSet(HOT_PRODUCT_CACHE_NAME, hotProductsCache.get(i), score);
         }
         redisRepository.expire(HOT_PRODUCT_CACHE_NAME, HOT_PRODUCT_CACHE_EXPIRE_TIME);
     }
 
     public void deleteHotProductsCache() {
-        redisRepository.delete(HOT_PRODUCT_CACHE_NAME);
+        redisRepository.delete(List.of(HOT_PRODUCT_CACHE_NAME));
     }
 }

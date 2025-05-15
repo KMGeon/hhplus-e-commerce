@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.application.payment;
 
-import jakarta.persistence.OptimisticLockException;
 import kr.hhplus.be.server.domain.coupon.CouponService;
 import kr.hhplus.be.server.domain.order.OrderInfo;
 import kr.hhplus.be.server.domain.order.OrderService;
@@ -10,7 +9,6 @@ import kr.hhplus.be.server.domain.user.UserService;
 import kr.hhplus.be.server.domain.user.userCoupon.UserCouponService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

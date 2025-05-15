@@ -1,8 +1,8 @@
 package kr.hhplus.be.server.domain.stock;
 
 import kr.hhplus.be.server.domain.stock.projection.EnoughStockDTO;
+import kr.hhplus.be.server.domain.support.CacheKeyManager;
 import kr.hhplus.be.server.domain.support.DistributedLock;
-import kr.hhplus.be.server.domain.support.RedisLockKeyStore;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,7 @@ public class StockService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @DistributedLock(key = RedisLockKeyStore.DECREASE_STOCK_ORDER_LOCK)
+    @DistributedLock(key = CacheKeyManager.RedisLockKey.DECREASE_STOCK_ORDER_LOCK)
     public int decreaseStockLock(final Long createOrderId, StockCommand.Order stockCommand) {
         int cnt = 0;
         for (StockCommand.Order.Item item : stockCommand.items()) {

@@ -190,10 +190,8 @@ class StockRepositoryImplTest extends ApplicationContext {
         assertThat(updatedRows).isEqualTo(beforeAvailableStock);
         assertThat(updatedRows).isLessThan((int) purchaseQuantity);
 
-        // 모든 재고가 소진되었는지 확인
         List<EnoughStockDTO> afterPurchase = stockRepository.findSkuIdAndAvailableEa(List.of(skuId));
 
-        // 재고가 모두 소진되었으므로 결과가 비어있거나 수량이 0이어야 함
         assertThat(afterPurchase.isEmpty() || afterPurchase.get(0).getEa() == 0).isTrue();
     }
 }
