@@ -1,19 +1,17 @@
 package kr.hhplus.be.server.domain.coupon;
 
+import kr.hhplus.be.server.application.coupon.CouponCriteria;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -60,17 +58,13 @@ class CouponServiceTest {
         CouponEntity coupon = spy(CouponEntity.createCoupon(
                 "테스트 쿠폰", "FIXED_AMOUNT", 100, 5000, LocalDateTime.now()));
 
-        when(couponRepository.findCouponById(couponId))
-                .thenReturn(coupon);
-        doNothing().when(coupon).validateForPublish();
-
+        when(couponRepository.issueCoupon(any(), any())).thenReturn(couponId);
         // when
-        couponService.decreaseCouponQuantityAfterCheckLock(couponId);
+        couponService.publishCoupon(
+                new CouponCriteria.PublishCriteria(1L, couponId));
 
         // then
-        verify(couponRepository, times(1)).findCouponById(couponId);
-        verify(coupon, times(1)).validateForPublish();
-        verify(coupon, times(1)).decreaseQuantity();
+        verify(couponRepository, times(1)).issueCoupon(any(), any());
     }
 
     @Test
@@ -86,45 +80,39 @@ class CouponServiceTest {
                 .expireTime(LocalDateTime.now().plusDays(10))
                 .build());
 
-        when(couponRepository.findCouponById(couponId)).thenReturn(coupon);
-        doThrow(new RuntimeException("쿠폰이 모두 소진되었습니다.")).when(coupon).validateForPublish();
+        doThrow(new RuntimeException("쿠폰이 모두 소진되었습니다.")).when(couponRepository).issueCoupon(any(),any());
 
         // when
-// then
-        assertThatThrownBy(() -> couponService.decreaseCouponQuantityAfterCheckLock(couponId))
+        // then
+        assertThatThrownBy(() -> couponService.publishCoupon(new CouponCriteria.PublishCriteria(1L, couponId)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("쿠폰이 모두 소진되었습니다");
 
-        verify(couponRepository, times(1)).findCouponById(couponId);
-        verify(coupon, times(1)).validateForPublish();
-        verify(coupon, never()).decreaseQuantity(); // 예외 발생으로 호출되지 않음
+        verify(couponRepository, times(1)).issueCoupon(any(), any());
     }
 
     @Test
-    void 쿠폰_만료_시_예외_발생() {
+    void 쿠폰_중복_발급_오류() {
         // given
         long couponId = 1L;
         CouponEntity coupon = spy(CouponEntity.builder()
                 .name("테스트 쿠폰")
                 .discountType(CouponDiscountType.FIXED_AMOUNT)
                 .initQuantity(100)
-                .remainQuantity(50)
+                .remainQuantity(0) // 남은 수량 0
                 .discountAmount(5000)
-                .expireTime(LocalDateTime.now().minusDays(1)) // 만료된 쿠폰
+                .expireTime(LocalDateTime.now().plusDays(10))
                 .build());
 
-        when(couponRepository.findCouponById(couponId)).thenReturn(coupon);
-        doThrow(new RuntimeException("만료된 쿠폰입니다.")).when(coupon).validateForPublish();
+        doThrow(new RuntimeException("이미 발급한 쿠폰입니다.")).when(couponRepository).issueCoupon(any(),any());
 
         // when
-// then
-        assertThatThrownBy(() -> couponService.decreaseCouponQuantityAfterCheckLock(couponId))
+        // then
+        assertThatThrownBy(() -> couponService.publishCoupon(new CouponCriteria.PublishCriteria(1L, couponId)))
                 .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("만료된 쿠폰입니다");
+                .hasMessageContaining("이미 발급한 쿠폰입니다.");
 
-        verify(couponRepository, times(1)).findCouponById(couponId);
-        verify(coupon, times(1)).validateForPublish();
-        verify(coupon, never()).decreaseQuantity(); // 예외 발생으로 호출되지 않음
+        verify(couponRepository, times(1)).issueCoupon(any(), any());
     }
 
     @Test
