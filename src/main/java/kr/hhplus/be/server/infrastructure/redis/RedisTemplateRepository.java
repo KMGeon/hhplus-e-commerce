@@ -1,11 +1,13 @@
 package kr.hhplus.be.server.infrastructure.redis;
 
 import com.google.gson.Gson;
+import kr.hhplus.be.server.domain.vo.RankingItem;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
 import java.nio.charset.StandardCharsets;
@@ -84,15 +86,6 @@ public class RedisTemplateRepository {
         return template.opsForSet().add(key, value);
     }
 
-    public Long delete(Collection<String> keys) {
-        return template.delete(keys);
-    }
-
-    public Boolean expire(String key, Duration timeout) {
-        return template.expire(key, timeout);
-    }
-
-
     public void flushAll() {
         template.execute((RedisCallback<Object>) connection -> {
             connection.serverCommands().flushAll();
@@ -100,33 +93,29 @@ public class RedisTemplateRepository {
         });
     }
 
-    public <T> void addToSortedSet(String key, T value, Long score) {
+    public <T> void addToSortedSet(String key, T value, Long score, Duration timeout) {
         String jsonValue = gson.toJson(value);
-        template.opsForZSet().add(key, jsonValue, score);
+        template.opsForZSet().incrementScore(key, jsonValue, score);
+        template.expire(key, timeout == null ? defaultExpireTime : timeout);
     }
 
-    public <T> Set<T> rangeByScore(String key, Float minScore, Float maxScore, Class<T> clazz) {
-        Set<String> jsonValues = template.opsForZSet().rangeByScore(key, minScore, maxScore);
-        Set<T> resultSet = new HashSet<T>();
 
-        if (jsonValues != null) {
-            for (String jsonValue : jsonValues) {
-                T v = gson.fromJson(jsonValue, clazz);
-                resultSet.add(v);
-            }
-        }
+    public <T> List<T> getSortedSetWithScores(String key, Class<T> clazz) {
+        final int limit = 10;
 
-        return resultSet;
-    }
+        Set<ZSetOperations.TypedTuple<String>> tuples = template.opsForZSet().reverseRangeWithScores(key, 0, limit - 1);
 
-    public <T> List<T> getTopNFromSortedSet(String key, int n, Class<T> clazz) {
-        Set<String> jsonValues = template.opsForZSet().reverseRange(key, 0, n - 1);
         List<T> resultList = new ArrayList<>();
 
-        if (jsonValues != null) {
-            for (String jsonValue : jsonValues) {
+        if (tuples != null) {
+            for (ZSetOperations.TypedTuple<String> tuple : tuples) {
                 try {
-                    T value = gson.fromJson(jsonValue, clazz);
+                    T value = gson.fromJson(tuple.getValue(), clazz);
+
+                    if (value instanceof RankingItem) {
+                        ((RankingItem) value).setScore(tuple.getScore().longValue());
+                    }
+
                     resultList.add(value);
                 } catch (Exception e) {
                     throw new RuntimeException("JSON 역직렬화 오류", e);
@@ -136,23 +125,4 @@ public class RedisTemplateRepository {
 
         return resultList;
     }
-
-    public <T> List<T> getAllFromSortedSet(String key, Class<T> clazz) {
-        Set<String> jsonValues = template.opsForZSet().reverseRange(key, 0, -1);
-        List<T> resultList = new ArrayList<>();
-
-        if (jsonValues != null) {
-            for (String jsonValue : jsonValues) {
-                try {
-                    T value = gson.fromJson(jsonValue, clazz);
-                    resultList.add(value);
-                } catch (Exception e) {
-                    throw new RuntimeException("JSON 역직렬화 오류", e);
-                }
-            }
-        }
-
-        return resultList;
-    }
-
 }

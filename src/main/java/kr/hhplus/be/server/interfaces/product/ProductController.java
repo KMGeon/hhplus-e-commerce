@@ -1,7 +1,9 @@
 package kr.hhplus.be.server.interfaces.product;
 
 import kr.hhplus.be.server.application.product.ProductFacadeService;
+import kr.hhplus.be.server.domain.product.ProductService;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
+import kr.hhplus.be.server.domain.vo.Ranking;
 import kr.hhplus.be.server.interfaces.ApiResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -9,13 +11,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 public class ProductController implements ProductControllerDocs {
 
     private final ProductFacadeService productFacadeService;
+    private final ProductService productService;
 
     /** 상품조회 **/
     @GetMapping("/api/v1/product")
@@ -29,7 +30,10 @@ public class ProductController implements ProductControllerDocs {
 
     /** 인기 상품 조회 **/
     @GetMapping("/api/v1/hot-product")
-    public ApiResponse<List<kr.hhplus.be.server.domain.order.projection.HotProductQuery>> getHotProducts() {
-        return ApiResponse.success(productFacadeService.getHotProducts());
+    public ApiResponse<Ranking> getHotProducts(
+            @RequestParam(value = "period", defaultValue = "DAILY") String period,
+            @RequestParam(value = "topNumber", defaultValue = "5") int topNumber
+    ) {
+        return ApiResponse.success(productService.getHotProducts(period, topNumber));
     }
 }

@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.domain.support;
+package kr.hhplus.be.server.support;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
-import static kr.hhplus.be.server.domain.support.CacheKeyManager.CacheKeyName.HOT_PRODUCT_CACHE_NAME;
-import static kr.hhplus.be.server.domain.support.CacheKeyManager.CacheKeyName.PRODUCT_CACHE_NAME;
+import static kr.hhplus.be.server.support.CacheKeyManager.CacheKeyName.HOT_PRODUCT_CACHE_NAME;
+import static kr.hhplus.be.server.support.CacheKeyManager.CacheKeyName.PRODUCT_CACHE_NAME;
 
 
 @Slf4j
@@ -46,6 +46,7 @@ public class CacheKeyManager {
     public static class CacheKeyName{
         public static final String HOT_PRODUCT_CACHE_NAME = "hot_product";
         public static final String PRODUCT_CACHE_NAME = "product";
+        public static final String DAILY_SUMMERY_PRODUCT = "product::daily:%s";
     }
 
     public static class RedisLockKey {

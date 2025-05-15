@@ -8,11 +8,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
+import kr.hhplus.be.server.domain.vo.Ranking;
 import org.springframework.data.domain.Page;
-
-import java.util.List;
 
 @Tag(name = "product", description = "상품 API")
 public interface ProductControllerDocs {
@@ -107,39 +105,81 @@ public interface ProductControllerDocs {
 
     @Operation(
             summary = "인기 상품 조회",
-            description = "현재 인기있는 상품 목록을 조회합니다."
+            description = "지정된 기간 동안의 인기 상품 순위를 조회합니다."
     )
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200",
-                    description = "인기 상품 목록 조회 성공",
+                    description = "인기 상품 순위 조회 성공",
                     content = @Content(
                             mediaType = "application/json",
-                            schema = @Schema(implementation = HotProductQuery.class),
+                            schema = @Schema(implementation = Ranking.class),
                             examples = @ExampleObject(
                                     value = """
                                             {
                                                 "status": "SUCCESS",
                                                 "message": null,
-                                                "data": [
-                                                    {
-                                                        "skuId": "SKU-003",
-                                                        "category": "과자",
-                                                        "productName": "초코과자",
-                                                        "orderCount": 120
-                                                    },
-                                                    {
-                                                        "skuId": "SKU-005",
-                                                        "category": "디저트",
-                                                        "productName": "아이스크림",
-                                                        "orderCount": 98
-                                                    }
-                                                ]
+                                                "data": {
+                                                    "period": "WEEKLY",
+                                                    "baseDate": "2024-07-15T10:00:00",
+                                                    "items": [
+                                                        {
+                                                            "skuId": "SKU-003",
+                                                            "productName": "초코과자"
+                                                        },
+                                                        {
+                                                            "skuId": "SKU-005",
+                                                            "productName": "아이스크림"
+                                                        },
+                                                        {
+                                                            "skuId": "SKU-001",
+                                                            "productName": "콜라"
+                                                        },
+                                                        {
+                                                            "skuId": "SKU-007",
+                                                            "productName": "포테이토칩"
+                                                        },
+                                                        {
+                                                            "skuId": "SKU-002",
+                                                            "productName": "사이다"
+                                                        }
+                                                    ],
+                                                    "totalCount": 5,
+                                                    "empty": false
+                                                }
+                                            }
+                                            """
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "잘못된 기간 파라미터",
+                    content = @Content(
+                            mediaType = "application/json",
+                            examples = @ExampleObject(
+                                    value = """
+                                            {
+                                                "status": "ERROR",
+                                                "message": "Invalid period parameter. Must be one of: DAILY, THREE_DAYS, WEEKLY, MONTHLY",
+                                                "data": null
                                             }
                                             """
                             )
                     )
             )
     })
-    kr.hhplus.be.server.interfaces.ApiResponse<List<HotProductQuery>> getHotProducts();
+    kr.hhplus.be.server.interfaces.ApiResponse<Ranking> getHotProducts(
+            @Parameter(
+                    description = "조회 기간 (DAILY, THREE_DAYS, WEEKLY, MONTHLY)",
+                    required = false,
+                    example = "WEEKLY",
+                    schema = @Schema(allowableValues = {"DAILY", "THREE_DAYS", "WEEKLY", "MONTHLY"})
+            ) String period,
+            @Parameter(
+                    description = "조회할 상위 상품 개수",
+                    required = false,
+                    example = "5"
+            ) int topNumber
+    );
 }

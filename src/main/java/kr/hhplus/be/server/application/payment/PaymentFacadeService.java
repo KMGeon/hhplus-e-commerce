@@ -48,9 +48,9 @@ public class PaymentFacadeService {
                     .orElse(BigDecimal.ZERO);
 
             BigDecimal finalTotalPrice = orderService.applyToDisCount(orderId, discountAmount);
+            orderService.addRankingSystemProducts(orderId);
             userService.usePoint(userId, finalTotalPrice);
             paymentService.paymentProcessByBoolean(orderId, userId, finalTotalPrice, true);
-
             log.info("결제 성공: orderId={}, userId={}, amount={}", orderId, userId, finalTotalPrice);
         } catch (Exception e) {
             log.error("결제 실패: orderId={}, userId={}, 원인={}", orderId, userId, e.getMessage(), e);

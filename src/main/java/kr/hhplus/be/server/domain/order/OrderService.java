@@ -1,5 +1,6 @@
 package kr.hhplus.be.server.domain.order;
 
+import kr.hhplus.be.server.domain.vo.RankingItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -42,6 +43,14 @@ public class OrderService {
         order.applyDiscount(discountAmount);
         order.complete();
         return order.getFinalAmount();
+    }
+
+    public void addRankingSystemProducts(Long orderId) {
+        orderCoreRepository.findOrderItemsWithProductInfo(orderId).forEach(v1 -> orderCoreRepository.addDailySummeryRanking(
+                DatePathProvider.toPath(LocalDateTime.now()),
+                RankingItem.create(v1.getSkuId(), v1.getProductName()),
+                v1.getEa()
+        ));
     }
 
 
