@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.domain.stock;
 
 import kr.hhplus.be.server.domain.stock.projection.EnoughStockDTO;
-import kr.hhplus.be.server.domain.support.CacheKeyManager;
+import kr.hhplus.be.server.support.CacheKeyManager;
 import kr.hhplus.be.server.domain.support.DistributedLock;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

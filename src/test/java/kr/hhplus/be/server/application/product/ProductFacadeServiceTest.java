@@ -2,8 +2,6 @@ package kr.hhplus.be.server.application.product;
 
 import kr.hhplus.be.server.application.product.strategy.ProductFetchStrategy;
 import kr.hhplus.be.server.application.product.strategy.ProductFetchStrategyFactory;
-import kr.hhplus.be.server.domain.order.OrderService;
-import kr.hhplus.be.server.domain.product.HotProductCacheManager;
 import kr.hhplus.be.server.domain.product.ProductInfo;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,10 +25,6 @@ class ProductFacadeServiceTest {
 
     @Mock
     private ProductFetchStrategyFactory strategyFactory;
-
-    @Mock
-    private HotProductCacheManager hotProductCacheManager;
-
     @Mock
     private ProductFetchStrategy productFetchStrategy;
 
@@ -38,7 +32,7 @@ class ProductFacadeServiceTest {
 
     @BeforeEach
     void setUp() {
-        productFacadeService = new ProductFacadeService(strategyFactory, hotProductCacheManager);
+        productFacadeService = new ProductFacadeService(strategyFactory);
     }
 
     @Test
