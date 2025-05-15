@@ -9,6 +9,10 @@ import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 
+import static kr.hhplus.be.server.domain.support.CacheKeyManager.CacheKeyName.HOT_PRODUCT_CACHE_NAME;
+import static kr.hhplus.be.server.domain.support.CacheKeyManager.CacheKeyName.PRODUCT_CACHE_NAME;
+
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -26,8 +30,8 @@ public class CacheKeyManager {
 
     @Getter
     public enum CacheType {
-        PRODUCT("product", Duration.ofDays(1)),
-        HOT_PRODUCT("hot_product", Duration.ofDays(3));
+        PRODUCT(PRODUCT_CACHE_NAME, Duration.ofDays(1)),
+        HOT_PRODUCT(HOT_PRODUCT_CACHE_NAME, Duration.ofDays(3));
 
         private final String cacheName;
         private final Duration ttl;
@@ -37,5 +41,14 @@ public class CacheKeyManager {
             this.ttl = ttl;
         }
 
+    }
+
+    public static class CacheKeyName{
+        public static final String HOT_PRODUCT_CACHE_NAME = "hot_product";
+        public static final String PRODUCT_CACHE_NAME = "product";
+    }
+
+    public static class RedisLockKey {
+        public static final String DECREASE_STOCK_ORDER_LOCK = "#stockCommand.items().![skuId()]";
     }
 }

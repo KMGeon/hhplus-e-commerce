@@ -4,6 +4,7 @@ import kr.hhplus.be.server.application.product.strategy.ProductFetchStrategy;
 import kr.hhplus.be.server.domain.product.ProductService;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
@@ -11,11 +12,8 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class FetchProductByCategoryStrategy implements ProductFetchStrategy {
     private final ProductService productService;
+    @Setter
     private String category;
-
-    public void setCategory(String category) {
-        this.category = category;
-    }
 
     @Override
     public Page<ProductStockDTO> fetch(int page, int size) {
