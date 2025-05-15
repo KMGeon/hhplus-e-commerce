@@ -13,7 +13,8 @@ public class DatePathProvider {
 
         long days = ChronoUnit.DAYS.between(baseDateTime, dateTime);
 
-        // 36진수로 변환하고 5자리로 패딩
+
+        /** 36진수로 변환하고 5자리로 패딩 **/
         return convertToBase36(days);
     }
 
@@ -22,7 +23,8 @@ public class DatePathProvider {
             throw new IllegalArgumentException("Invalid path length");
         }
 
-        // 36진수를 10진수로 변환
+
+        /** 36진수로 변환된 값을 10진수로 변환하는 부분 **/
         long days = convertFromBase36(path);
         return LocalDateTime.of(2025, 1, 1, 0, 0, 0).plusDays(days);
     }
