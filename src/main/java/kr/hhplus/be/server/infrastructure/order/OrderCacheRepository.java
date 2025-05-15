@@ -16,6 +16,6 @@ public class OrderCacheRepository {
     private final RedisTemplateRepository redisTemplateRepository;
 
     public void addDailySummeryRanking(String key, RankingItem value, Long score) {
-        redisTemplateRepository.addToSortedSet(String.format(DAILY_SUMMERY_PRODUCT, key), value, score, Duration.ofDays(7));
+        redisTemplateRepository.addToSortedSet(String.format(DAILY_SUMMERY_PRODUCT, key), value, score, Duration.ofDays(10));
     }
 }
