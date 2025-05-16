@@ -31,7 +31,8 @@ public class CacheKeyManager {
     @Getter
     public enum CacheType {
         PRODUCT(PRODUCT_CACHE_NAME, Duration.ofDays(1)),
-        HOT_PRODUCT(HOT_PRODUCT_CACHE_NAME, Duration.ofDays(3));
+        HOT_PRODUCT(HOT_PRODUCT_CACHE_NAME, Duration.ofDays(3)),
+        HOT_PRODUCT_QUERYDSL(CacheKeyName.HOT_PRODUCT_QUERYDSL, Duration.ofDays(7));
 
         private final String cacheName;
         private final Duration ttl;
@@ -45,6 +46,7 @@ public class CacheKeyManager {
 
     public static class CacheKeyName{
         public static final String HOT_PRODUCT_CACHE_NAME = "hot_product";
+        public static final String HOT_PRODUCT_QUERYDSL = "hot_product::three:%s";
         public static final String PRODUCT_CACHE_NAME = "product";
         public static final String DAILY_SUMMERY_PRODUCT = "product::daily:%s";
     }

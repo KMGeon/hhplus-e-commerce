@@ -2,12 +2,15 @@ package kr.hhplus.be.server.domain.order;
 
 import kr.hhplus.be.server.domain.vo.RankingItem;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+
+import static kr.hhplus.be.server.support.CacheKeyManager.CacheKeyName.HOT_PRODUCT_QUERYDSL;
 
 @Service
 @RequiredArgsConstructor
@@ -54,10 +57,15 @@ public class OrderService {
     }
 
 
-    public List<kr.hhplus.be.server.domain.order.projection.HotProductQuery> getHotProducts(LocalDateTime current) {
+    @Cacheable(
+            value = HOT_PRODUCT_QUERYDSL,
+            key = "@cacheKeyManager.generateKey(#datePath)"
+    )
+    public List<kr.hhplus.be.server.domain.order.projection.HotProductQuery> getHotProducts(String datePath) {
+        LocalDateTime currentDate = DatePathProvider.toDateTime(datePath);
         return orderCoreRepository.findHotProducts(
-                DatePathProvider.toPath(current.minusDays(3).with(LocalTime.MIN)),
-                DatePathProvider.toPath(current.with(LocalTime.MAX))
+                DatePathProvider.toPath(currentDate.minusDays(3).with(LocalTime.MIN)),
+                DatePathProvider.toPath(currentDate.with(LocalTime.MAX))
         );
     }
 
