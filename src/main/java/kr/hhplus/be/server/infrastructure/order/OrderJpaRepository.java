@@ -11,20 +11,19 @@ import java.util.List;
 public interface OrderJpaRepository extends JpaRepository<OrderEntity, Long> {
 
     @Query(nativeQuery = true, value = """
-            SELECT id FROM orders 
-            WHERE expire_time < NOW() 
-            AND status = 'CONFIRMED'
+            SELECT a.order_id FROM orders as a 
+            WHERE a.expire_time < NOW() 
+            AND a.status = 'CONFIRMED'
             """)
     List<Long> findExpiredOrderIds();
 
     @Modifying
-    @Query(nativeQuery = true, value = """
-            UPDATE orders
-            SET status = 'CANCELLED',
-                updated_at = NOW()
-            WHERE id IN :ids
-            """)
-    long updateOrderStatusByIds(@Param("ids") List<Long> ids);
+    @Query("""
+        UPDATE OrderEntity o
+        SET o.status = 'CANCELLED'
+        WHERE o.id IN :orderIds
+        """)
+    int updateOrderStatusByIds(@Param("orderIds") List<Long> orderIds);
 
     @Query(value = "select o from OrderEntity o where now() > o.expireTime and o.status = 'CONFIRMED'")
     List<OrderEntity> findOrderEntityByExpireTime();

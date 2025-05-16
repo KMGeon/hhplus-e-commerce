@@ -169,11 +169,9 @@ public class StockConcurrencyTest extends ApplicationContext {
             });
         }
 
-        // 모든 스레드 완료 대기
         latch.await();
         executorService.shutdown();
 
-        // 최종 재고 확인 및 검증
         assertEquals(THREAD_COUNT, successCount.get() + failureCount.get(),
                 "총 처리된 주문 수가 스레드 수와 일치해야 합니다");
         List<StockEntity> lgGramStocks = stockJpaRepository.findAll().stream()
@@ -187,7 +185,6 @@ public class StockConcurrencyTest extends ApplicationContext {
     }
 
     private void createTestData() {
-        // 상품 데이터 생성
         List<ProductEntity> products = new ArrayList<>();
 
         products.add(ProductEntity.builder()
@@ -244,7 +241,6 @@ public class StockConcurrencyTest extends ApplicationContext {
         stockJpaRepository.saveAll(testStocks);
     }
 
-    // SKU ID에 따른 카테고리 반환하는 헬퍼 메서드 추가
     private CategoryEnum getCategoryForSku(String skuId) {
         if (skuId.startsWith("AP")) {
             return CategoryEnum.APPLE;

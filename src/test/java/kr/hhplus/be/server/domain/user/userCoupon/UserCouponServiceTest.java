@@ -1,15 +1,16 @@
 package kr.hhplus.be.server.domain.user.userCoupon;
 
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class UserCouponServiceTest {
@@ -24,46 +25,6 @@ class UserCouponServiceTest {
     private static final Long COUPON_ID = 100L;
     private static final Long USER_COUPON_ID = 1000L;
     private static final Long ORDER_ID = 10000L;
-
-    @Test
-    void 처음_발행하는_쿠폰은_정상적으로_발행() {
-        // given
-        CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(USER_ID, COUPON_ID);
-
-        // 쿠폰이 없는 경우 null 반환
-        when(userCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID)).thenReturn(null);
-
-        // 쿠폰 저장 시 반환할 객체 설정
-        UserCouponEntity savedCoupon = UserCouponEntity.publishCoupon(USER_ID, COUPON_ID);
-        when(userCouponRepository.save(any(UserCouponEntity.class))).thenReturn(savedCoupon);
-
-        // when
-        Long result = userCouponService.publishOnlyIfFirstTime(criteria);
-
-        // then
-        assertThat(result).isEqualTo(USER_ID);
-        verify(userCouponRepository, times(1)).findByUserIdAndCouponId(USER_ID, COUPON_ID);
-        verify(userCouponRepository, times(1)).save(any(UserCouponEntity.class));
-    }
-
-    @Test
-    void 이미_발행된_쿠폰은_예외가_발생한다() {
-        // given
-        CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(USER_ID, COUPON_ID);
-
-        // 쿠폰이 이미 존재하는 경우
-        UserCouponEntity existingCoupon = UserCouponEntity.publishCoupon(USER_ID, COUPON_ID);
-        when(userCouponRepository.findByUserIdAndCouponId(USER_ID, COUPON_ID)).thenReturn(existingCoupon);
-
-        // when
-// then
-        assertThatThrownBy(() -> userCouponService.publishOnlyIfFirstTime(criteria))
-                .isInstanceOf(RuntimeException.class)
-                .hasMessageContaining("이미 발행된 쿠폰입니다");
-
-        verify(userCouponRepository, times(1)).findByUserIdAndCouponId(USER_ID, COUPON_ID);
-        verify(userCouponRepository, never()).save(any(UserCouponEntity.class));
-    }
 
     @Test
     void 유효한_쿠폰검증_쿠폰_ID를_반환한다() {
@@ -108,5 +69,14 @@ class UserCouponServiceTest {
         // then
         verify(userCouponRepository, times(1)).findById(USER_COUPON_ID);
         verify(coupon, times(1)).use(ORDER_ID);
+    }
+
+    @Test
+    public void 유저_쿠폰_BATCH_생성() throws Exception{
+        // given
+        // when
+        int rtn = userCouponService.batchPublishUserCoupon(COUPON_ID, List.of(1L, 2L, 3L));
+        // then
+        assertEquals(rtn,3,"");
     }
 }

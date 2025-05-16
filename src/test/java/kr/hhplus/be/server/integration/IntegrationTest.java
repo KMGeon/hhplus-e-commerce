@@ -1,42 +1,22 @@
 package kr.hhplus.be.server.integration;
 
 import kr.hhplus.be.server.application.coupon.CouponCriteria;
-import kr.hhplus.be.server.application.coupon.CouponFacadeService;
 import kr.hhplus.be.server.application.order.OrderCriteria;
-import kr.hhplus.be.server.application.order.OrderFacadeService;
 import kr.hhplus.be.server.application.payment.PaymentCriteria;
-import kr.hhplus.be.server.application.payment.PaymentFacadeService;
 import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.coupon.CouponCommand;
-import kr.hhplus.be.server.domain.coupon.CouponService;
+import kr.hhplus.be.server.domain.coupon.CouponInfo;
 import kr.hhplus.be.server.domain.order.OrderEntity;
 import kr.hhplus.be.server.domain.order.OrderStatus;
-import kr.hhplus.be.server.domain.product.CategoryEnum;
-import kr.hhplus.be.server.domain.product.ProductEntity;
-import kr.hhplus.be.server.domain.stock.StockEntity;
 import kr.hhplus.be.server.domain.user.UserCommand;
 import kr.hhplus.be.server.domain.user.UserEntity;
-import kr.hhplus.be.server.domain.user.UserService;
 import kr.hhplus.be.server.domain.user.userCoupon.CouponStatus;
 import kr.hhplus.be.server.domain.user.userCoupon.UserCouponEntity;
-import kr.hhplus.be.server.infrastructure.order.OrderItemJpaRepository;
-import kr.hhplus.be.server.infrastructure.order.OrderJpaRepository;
-import kr.hhplus.be.server.infrastructure.product.ProductJpaRepository;
-import kr.hhplus.be.server.infrastructure.stock.StockJpaRepository;
-import kr.hhplus.be.server.infrastructure.user.UserCouponJpaRepository;
-import kr.hhplus.be.server.infrastructure.user.UserJpaRepository;
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.annotation.Rollback;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,14 +32,17 @@ public class IntegrationTest extends ApplicationContext {
              4. 이후 주문을 결제한다. (쿠폰을 사용한다.)
             """)
     public void 시나리오_1() throws Exception {
+        // redis 초기화
+        redisTemplateRepository.flushAll();
         // 유저가 포인트를 충전한다.
         userService.charge(new UserCommand.PointCharge(EXIST_USER, 1000L));
-
         // 쿠폰을 만든다.
-        couponService.save(new CouponCommand.Create("생일 축하해요 쿠폰", "FIXED_AMOUNT", 10L, 1000L));
+        CouponInfo.CreateInfo getCoupon = couponService.save(new CouponCommand.Create("생일 축하해요 쿠폰", "FIXED_AMOUNT", 10L, 1000L));
         // 유저가 쿠폰을 발급한다
-        couponFacadeService.publishCouponLock(new CouponCriteria.PublishCriteria(EXIST_USER, 1L));
+        couponService.publishCoupon(new CouponCriteria.PublishCriteria(EXIST_USER, getCoupon.couponId()));
 
+        // coupon 스케줄러 > 10000
+        Thread.sleep(10005L);
 
         // 총 주문 금액 계산
         List<OrderCriteria.Item> items = List.of(

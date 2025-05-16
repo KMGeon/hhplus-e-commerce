@@ -1,9 +1,11 @@
 package kr.hhplus.be.server.domain.user.userCoupon;
 
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -12,15 +14,14 @@ public class UserCouponService {
 
     private final UserCouponRepository userCouponRepository;
 
-    public Long publishOnlyIfFirstTime(CouponCriteria.PublishCriteria criteria) {
-        Long userId = criteria.userId();
-        Long couponId = criteria.couponId();
-        UserCouponEntity userCoupon = userCouponRepository.findByUserIdAndCouponId(userId, couponId);
+    public int batchPublishUserCoupon(Long couponId, List<Long> userIds) {
+        var userCoupons = new ArrayList<UserCouponEntity>();
 
-        if (userCoupon != null)
-            throw new RuntimeException(String.format("이미 발행된 쿠폰입니다. userId: %d, couponId: %d", userId, couponId));
+        for (Long userId : userIds)
+            userCoupons.add(UserCouponEntity.publishCoupon(userId, couponId));
 
-        return userCouponRepository.save(UserCouponEntity.publishCoupon(userId, couponId)).getUserId();
+        userCouponRepository.saveAll(userCoupons);
+        return userIds.size();
     }
 
     public Long checkUserCoupon(Long userCouponId, Long userId) {
@@ -33,5 +34,4 @@ public class UserCouponService {
         userCouponRepository.findById(userCouponId)
                 .use(orderId);
     }
-
 }

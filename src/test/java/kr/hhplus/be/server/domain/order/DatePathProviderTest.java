@@ -11,6 +11,27 @@ import static org.junit.jupiter.api.Assertions.*;
 class DatePathProviderTest {
 
     @Test
+    public void 배열사용_날짜경로변환_테스트_수정() throws Exception {
+        // given
+        int initNum = 1000;
+        LocalDateTime[] dates = new LocalDateTime[initNum];
+        String[] paths = new String[initNum];
+        LocalDateTime startDate = LocalDateTime.of(2025, 1, 1, 0, 0, 0);
+
+        // when
+        for (int i = 0; i < initNum; i++) {
+            dates[i] = startDate.plusDays(i);
+            paths[i] = DatePathProvider.toPath(dates[i]);
+        }
+
+        // then
+        for (int i = 0; i < initNum; i++) {
+            System.out.printf("dates[%d] = %s -> paths[%d] = %s%n",
+                    i, dates[i], i, paths[i]);
+        }
+    }
+
+    @Test
     @DisplayName("날짜를 경로로 변환 테스트 - 기준일")
     void toPath_withBaseDate_returnsCorrectPath() {
         // given

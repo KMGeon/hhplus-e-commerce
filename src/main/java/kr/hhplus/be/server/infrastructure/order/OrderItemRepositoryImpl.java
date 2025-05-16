@@ -4,7 +4,8 @@ import kr.hhplus.be.server.domain.order.OrderCoreRepository;
 import kr.hhplus.be.server.domain.order.OrderEntity;
 import kr.hhplus.be.server.domain.order.OrderItemEntity;
 import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
-import kr.hhplus.be.server.domain.product.projection.HotProductDTO;
+import kr.hhplus.be.server.domain.order.projection.OrderItemProductQuery;
+import kr.hhplus.be.server.domain.vo.RankingItem;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -17,6 +18,7 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
     private final OrderJpaRepository orderJpaRepository;
     private final OrderItemJpaRepository orderItemJpaRepository;
     private final HotProductQueryRepository hotProductQueryRepository;
+    private final OrderCacheRepository orderCacheRepository;
 
     @Override
     public OrderEntity save(OrderEntity order) {
@@ -42,6 +44,16 @@ public class OrderItemRepositoryImpl implements OrderCoreRepository {
     @Override
     public List<Long> findExpiredOrderIds() {
         return orderJpaRepository.findExpiredOrderIds();
+    }
+
+    @Override
+    public void addDailySummeryRanking(String key, RankingItem value, Long score) {
+        orderCacheRepository.addDailySummeryRanking(key, value, score);
+    }
+
+    @Override
+    public List<OrderItemProductQuery> findOrderItemsWithProductInfo(Long orderId) {
+        return orderItemJpaRepository.findOrderItemsWithProductInfo(orderId);
     }
 
     @Override

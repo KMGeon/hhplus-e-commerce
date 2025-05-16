@@ -1,36 +1,32 @@
 package kr.hhplus.be.server.infrastructure.product;
 
-import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
+import kr.hhplus.be.server.domain.vo.Ranking;
+import kr.hhplus.be.server.domain.vo.RankingItem;
+import kr.hhplus.be.server.domain.vo.RankingPeriod;
 import kr.hhplus.be.server.infrastructure.redis.RedisTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.time.Duration;
 import java.util.List;
+
+import static kr.hhplus.be.server.support.CacheKeyManager.CacheKeyName.DAILY_SUMMERY_PRODUCT;
 
 @Repository
 @RequiredArgsConstructor
 public class ProductCacheRepository {
 
     private final RedisTemplateRepository redisRepository;
-    private static final String HOT_PRODUCT_CACHE_NAME = "hot_product::[]";
-    private static final Duration HOT_PRODUCT_CACHE_EXPIRE_TIME = Duration.ofDays(3);
-    private static final int HOT_PRODUCT_CACHE_LIMIT = 5;
 
-    public List<HotProductQuery> findHotProductsCacheLimit5(){
-        return redisRepository.getTopNFromSortedSet(HOT_PRODUCT_CACHE_NAME, HOT_PRODUCT_CACHE_LIMIT, HotProductQuery.class);
-    }
 
-    public void setHotProductsCacheLimit5(List<HotProductQuery> hotProductsCache) {
-        redisRepository.delete(HOT_PRODUCT_CACHE_NAME);
-        for (int i = 0; i < hotProductsCache.size(); i++) {
-            float score = hotProductsCache.size() - i;
-            redisRepository.addToSortedSet(HOT_PRODUCT_CACHE_NAME, hotProductsCache.get(i), score);
-        }
-        redisRepository.expire(HOT_PRODUCT_CACHE_NAME, HOT_PRODUCT_CACHE_EXPIRE_TIME);
-    }
+    public Ranking findDailyRanking(String targetPath) {
+        List<RankingItem> topNFromSortedSet = redisRepository.getSortedSetWithScores(
+                String.format(DAILY_SUMMERY_PRODUCT, targetPath),
+                RankingItem.class
+        );
 
-    public void deleteHotProductsCache() {
-        redisRepository.delete(HOT_PRODUCT_CACHE_NAME);
+        if (topNFromSortedSet == null || topNFromSortedSet.isEmpty())
+            return Ranking.empty(RankingPeriod.DAILY, targetPath);
+
+        return Ranking.create(RankingPeriod.DAILY, targetPath, topNFromSortedSet);
     }
 }

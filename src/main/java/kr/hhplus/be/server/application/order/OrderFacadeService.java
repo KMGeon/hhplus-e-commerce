@@ -39,9 +39,8 @@ public class OrderFacadeService {
          return createOrderId;
     }
 
-    public List<Long> republishUnpublishedEvents(){
-        List<Long> expireIds = orderService.updateExpireOrderStatus();
-        stockService.restoreStock(expireIds);
-        return expireIds;
+    @Transactional
+    public void republishUnpublishedEvents(){
+        stockService.restoreStock(orderService.updateExpireOrderStatus());
     }
 }

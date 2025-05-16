@@ -43,10 +43,10 @@ class CouponControllerTest {
         // given
         CouponRequest.Create createRequest = new CouponRequest.Create(
                 "10% 할인 쿠폰", "PERCENTAGE", 100L, 10.0);
-        
+
         Long couponId = 1L;
         CouponInfo.CreateInfo couponInfo = CouponInfo.CreateInfo.of(couponId);
-        
+
         given(couponService.save(any(CouponCommand.Create.class))).willReturn(couponInfo);
 
         // when & then
@@ -55,7 +55,7 @@ class CouponControllerTest {
                 .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data.couponId").value(couponId));
-        
+
         verify(couponService).save(any(CouponCommand.Create.class));
     }
 
@@ -66,8 +66,8 @@ class CouponControllerTest {
         long userId = 1L;
         long couponId = 100L;
         CouponRequest.Publish publishRequest = new CouponRequest.Publish(userId, couponId);
-        
-        given(couponFacadeService.publishCouponLock(any(CouponCriteria.PublishCriteria.class))).willReturn(userId);
+
+        given(couponService.publishCoupon(any(CouponCriteria.PublishCriteria.class))).willReturn(userId);
 
         // when & then
         mockMvc.perform(post("/api/v1/coupon/publish")
@@ -75,10 +75,10 @@ class CouponControllerTest {
                 .content(objectMapper.writeValueAsString(publishRequest)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value(userId));
-        
-        verify(couponFacadeService).publishCouponLock(any(CouponCriteria.PublishCriteria.class));
+
+        verify(couponService).publishCoupon(any(CouponCriteria.PublishCriteria.class));
     }
-    
+
     @Test
     @DisplayName("쿠폰 발행 API 예외 테스트 - 서비스 레이어 예외")
     void publishCouponServiceExceptionTest() throws Exception {
@@ -86,9 +86,9 @@ class CouponControllerTest {
         long userId = 1L;
         long couponId = 100L;
         CouponRequest.Publish publishRequest = new CouponRequest.Publish(userId, couponId);
-        
+
         String errorMessage = "쿠폰 발행 중 오류가 발생했습니다";
-        given(couponFacadeService.publishCouponLock(any(CouponCriteria.PublishCriteria.class)))
+        given(couponService.publishCoupon(any(CouponCriteria.PublishCriteria.class)))
                 .willThrow(new RuntimeException(errorMessage));
 
         // when & then

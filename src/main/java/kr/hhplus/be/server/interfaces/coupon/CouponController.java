@@ -1,8 +1,6 @@
 package kr.hhplus.be.server.interfaces.coupon;
 
 import jakarta.validation.Valid;
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
-import kr.hhplus.be.server.application.coupon.CouponFacadeService;
 import kr.hhplus.be.server.domain.coupon.CouponInfo;
 import kr.hhplus.be.server.domain.coupon.CouponService;
 import kr.hhplus.be.server.interfaces.ApiResponse;
@@ -18,7 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class CouponController implements CouponControllerDocs {
 
     private final CouponService couponService;
-    private final CouponFacadeService couponFacadeService;
 
 
     @PostMapping("/coupon")
@@ -33,8 +30,6 @@ public class CouponController implements CouponControllerDocs {
     public ApiResponse<Long> publishCoupon(
             @Valid @RequestBody CouponRequest.Publish publishRequest
     ) {
-        CouponCriteria.PublishCriteria criteria = publishRequest.toCriteria();
-        return ApiResponse.success(couponFacadeService.publishCouponLock(criteria));
+        return ApiResponse.success(couponService.publishCoupon(publishRequest.toCriteria()));
     }
-
 }
