@@ -1,7 +1,7 @@
 package kr.hhplus.be.server.domain.product;
 
-import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
+import kr.hhplus.be.server.domain.vo.Ranking;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -15,7 +15,5 @@ public interface ProductRepository {
     long countBySkuIdIn(List<String> skuIds);
     Optional<ProductEntity> findById(Long id);
     List<ProductEntity> findAllBySkuIdIn(List<String> skuIds);
-    List<HotProductQuery> findHotProductsCache();
-    void setHotProductsCacheLimit5(List<HotProductQuery> hotProductsCache);
-    void deleteHotProductsCache();
+    Ranking findDailyByPeriod( String targetPath);
 }

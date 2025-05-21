@@ -18,6 +18,9 @@ public class HotProductQueryRepositoryImpl implements HotProductQueryRepository 
 
     private final JPAQueryFactory queryFactory;
 
+    /**
+     * @deprecated : redis로 인기 Product를 탐색하고 나중에 redis 장애가 발생하면 사용할 쿼리
+     */
     @Override
     public List<HotProductQuery> findHotProducts(String startPath, String endPath) {
         return queryFactory
@@ -27,7 +30,7 @@ public class HotProductQueryRepositoryImpl implements HotProductQueryRepository 
                         productEntity.productName,
                         orderItemEntity.ea.sum()))
                 .from(orderEntity)
-                .innerJoin(orderItemEntity).on(orderEntity.id.eq(orderItemEntity.id))
+                .innerJoin(orderItemEntity).on(orderEntity.id.eq(orderItemEntity.order.id))
                 .innerJoin(productEntity).on(orderItemEntity.skuId.eq(productEntity.skuId))
                 .where(orderEntity.datePath.between(startPath, endPath))
                 .groupBy(orderItemEntity.skuId, productEntity.category, productEntity.productName)

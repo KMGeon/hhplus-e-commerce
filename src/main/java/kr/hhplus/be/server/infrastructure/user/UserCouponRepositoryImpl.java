@@ -5,7 +5,7 @@ import kr.hhplus.be.server.domain.user.userCoupon.UserCouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -19,8 +19,8 @@ public class UserCouponRepositoryImpl implements UserCouponRepository {
     }
 
     @Override
-    public UserCouponEntity findByUserIdAndCouponId(long userId, long couponId) {
-        return repository.findByUserIdAndCouponId(userId, couponId);
+    public void saveAll(List<UserCouponEntity> userCouponEntities) {
+        repository.saveAll(userCouponEntities);
     }
 
     @Override

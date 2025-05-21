@@ -1,9 +1,9 @@
 package kr.hhplus.be.server.infrastructure.product;
 
-import kr.hhplus.be.server.domain.order.projection.HotProductQuery;
 import kr.hhplus.be.server.domain.product.ProductEntity;
 import kr.hhplus.be.server.domain.product.ProductRepository;
 import kr.hhplus.be.server.domain.product.projection.ProductStockDTO;
+import kr.hhplus.be.server.domain.vo.Ranking;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,19 +45,9 @@ public class ProductRepositoryImpl implements ProductRepository {
         return repository.countBySkuIdIn(skuIds);
     }
 
-    @Override
-    public List<HotProductQuery> findHotProductsCache() {
-        return productCacheRepository.findHotProductsCacheLimit5();
-    }
 
     @Override
-    public void setHotProductsCacheLimit5(List<HotProductQuery> hotProductsCache) {
-        productCacheRepository.setHotProductsCacheLimit5(hotProductsCache);
+    public Ranking findDailyByPeriod(String targetPath) {
+        return productCacheRepository.findDailyRanking(targetPath);
     }
-
-    @Override
-    public void deleteHotProductsCache() {
-        productCacheRepository.deleteHotProductsCache();
-    }
-
 }

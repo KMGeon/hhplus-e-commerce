@@ -112,8 +112,7 @@ class OrderServiceTest {
         );
 
         when(orderCoreRepository.findHotProducts(any(), any())).thenReturn(mockProducts);
-        LocalDateTime current = LocalDateTime.now();
-        List<HotProductQuery> result = orderService.getHotProducts(current);
+        List<HotProductQuery> result = orderService.getHotProducts(DatePathProvider.toPath(LocalDateTime.now()));
 
         assertThat(result).hasSize(5);
         assertThat(result).isEqualTo(mockProducts);

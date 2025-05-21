@@ -21,6 +21,7 @@ public class UserService {
 
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public UserInfo.User getUser(long userId) {
         UserEntity getUser = userRepository.findById(userId);
         return UserInfo.User.from(getUser);

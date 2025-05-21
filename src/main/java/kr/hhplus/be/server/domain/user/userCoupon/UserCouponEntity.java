@@ -3,10 +3,7 @@ package kr.hhplus.be.server.domain.user.userCoupon;
 
 import jakarta.persistence.*;
 import kr.hhplus.be.server.domain.support.BaseTimeEntity;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "user_coupons")

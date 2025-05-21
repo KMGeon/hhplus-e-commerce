@@ -24,6 +24,10 @@ public class OrderItemEntity extends BaseTimeEntity {
 
     private Long unitPrice;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id")
+    private OrderEntity order;
+
 
 
     public static OrderItemEntity createOrderItem(String skuId, Long ea, Long unitPrice) {
