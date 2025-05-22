@@ -13,4 +13,9 @@ public class PaymentRepositoryImpl implements PaymentRepository {
     public PaymentEntity save(PaymentEntity payment) {
         return repository.save(payment);
     }
+
+    @Override
+    public PaymentEntity findByOrderId(Long orderId) {
+        return repository.findByOrderId(orderId);
+    }
 }

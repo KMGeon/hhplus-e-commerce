@@ -31,6 +31,8 @@ public class PaymentEntity extends BaseTimeEntity {
     @Column(nullable = false)
     private PaymentStatus status;
 
+    private String errorReason;
+
 
     private PaymentEntity(Long orderId, Long userId, BigDecimal amount) {
         this.orderId = orderId;
@@ -51,4 +53,8 @@ public class PaymentEntity extends BaseTimeEntity {
         this.status = PaymentStatus.FAILED;
     }
 
+    public void rollback(String errorReason) {
+        this.status = PaymentStatus.FAILED;
+        this.errorReason = errorReason;
+    }
 } 
