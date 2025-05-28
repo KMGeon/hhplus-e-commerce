@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.concurrency;
 
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
 import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.coupon.CouponCommand;
 import kr.hhplus.be.server.domain.coupon.CouponEntity;
@@ -39,7 +38,7 @@ class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
 
         for (int i = 0; i < threadCount; i++) {
             Long userId = (long) i;
-            CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, getCreateInfo.couponId());
+            CouponCommand.Publish criteria = new CouponCommand.Publish(userId, getCreateInfo.couponId());
 
             executorService.submit(() -> {
                 try {
@@ -81,7 +80,7 @@ class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
 
         for (int i = 0; i < threadCount; i++) {
             Long userId = 100L + i;
-            CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, getCreateInfo.couponId());
+            CouponCommand.Publish criteria = new CouponCommand.Publish(userId, getCreateInfo.couponId());
 
             executorService.submit(() -> {
                 try {
@@ -122,7 +121,7 @@ class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
 
         for (int i = 0; i < firstBatchCount; i++) {
             Long userId = 200L + i;
-            CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, getCreateInfo.couponId());
+            CouponCommand.Publish criteria = new CouponCommand.Publish(userId, getCreateInfo.couponId());
 
             executorService.submit(() -> {
                 try {
@@ -146,8 +145,8 @@ class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
 
         // when - 두 번째 요청: 추가 1명이 요청
         Long additionalUserId = 206L;
-        CouponCriteria.PublishCriteria additionalCriteria =
-                new CouponCriteria.PublishCriteria(additionalUserId, getCreateInfo.couponId());
+        CouponCommand.Publish additionalCriteria =
+                new CouponCommand.Publish(additionalUserId, getCreateInfo.couponId());
 
         // then
         assertThatThrownBy(() -> couponService.publishCoupon(additionalCriteria))
@@ -173,7 +172,7 @@ class CouponFacadeServiceConcurrencyTest extends ApplicationContext {
 
         for (int i = 0; i < threadCount; i++) {
             Long userId = 300L + i;
-            CouponCriteria.PublishCriteria criteria = new CouponCriteria.PublishCriteria(userId, getCreateInfo.couponId());
+            CouponCommand.Publish criteria = new CouponCommand.Publish(userId, getCreateInfo.couponId());
 
             executorService.submit(() -> {
                 try {

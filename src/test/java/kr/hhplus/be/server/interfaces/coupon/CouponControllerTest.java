@@ -1,8 +1,6 @@
 package kr.hhplus.be.server.interfaces.coupon;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
-import kr.hhplus.be.server.application.coupon.CouponFacadeService;
 import kr.hhplus.be.server.domain.coupon.CouponCommand;
 import kr.hhplus.be.server.domain.coupon.CouponInfo;
 import kr.hhplus.be.server.domain.coupon.CouponService;
@@ -10,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -34,8 +31,6 @@ class CouponControllerTest {
     @MockitoBean
     private CouponService couponService;
 
-    @MockitoBean
-    private CouponFacadeService couponFacadeService;
 
     @Test
     @DisplayName("쿠폰 생성 API 테스트")
@@ -67,7 +62,7 @@ class CouponControllerTest {
         long couponId = 100L;
         CouponRequest.Publish publishRequest = new CouponRequest.Publish(userId, couponId);
 
-        given(couponService.publishCoupon(any(CouponCriteria.PublishCriteria.class))).willReturn(userId);
+        given(couponService.publishCoupon(any(CouponCommand.Publish.class))).willReturn(userId);
 
         // when & then
         mockMvc.perform(post("/api/v1/coupon/publish")
@@ -76,7 +71,7 @@ class CouponControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.data").value(userId));
 
-        verify(couponService).publishCoupon(any(CouponCriteria.PublishCriteria.class));
+        verify(couponService).publishCoupon(any(CouponCommand.Publish.class));
     }
 
     @Test
@@ -88,7 +83,7 @@ class CouponControllerTest {
         CouponRequest.Publish publishRequest = new CouponRequest.Publish(userId, couponId);
 
         String errorMessage = "쿠폰 발행 중 오류가 발생했습니다";
-        given(couponService.publishCoupon(any(CouponCriteria.PublishCriteria.class)))
+        given(couponService.publishCoupon(any(CouponCommand.Publish.class)))
                 .willThrow(new RuntimeException(errorMessage));
 
         // when & then
