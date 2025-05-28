@@ -1,4 +1,4 @@
-package kr.hhplus.be.server.support;
+package kr.hhplus.be.server.support.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,7 +16,7 @@ public class AsyncConfig {
         executor.setCorePoolSize(2);
         executor.setMaxPoolSize(5);
         executor.setQueueCapacity(10);
-        executor.setThreadNamePrefix("Coupon-Async-");
+        executor.setThreadNamePrefix("mugeon-async-");
         executor.initialize();
         return executor;
     }

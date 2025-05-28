@@ -88,6 +88,7 @@ dependencies {
 
 
     // Test
+	testImplementation("org.testcontainers:kafka:1.19.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:mysql")
