@@ -59,7 +59,7 @@ public class CouponEntity extends BaseTimeEntity {
 
     public void decreaseRemainQuantity() {
         validateQuantity();
-        this.remainQuantity -= 1L;
+        this.remainQuantity--;
     }
 
     public void decreaseQuantity() {

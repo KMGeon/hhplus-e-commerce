@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public enum EventType {
     COUPON_ISSUE(CouponEvent.Outer.CouponIssueEventPayload.class, Topic.COUPON_ISSUE),
+    COUPON_DECREASE(CouponEvent.Outer.CouponDecreaseEvent.class, Topic.COUPON_DECREASE),
     PAYMENT_INTERNAL_API(PaymentEvent.PaymentSendInternalPayload.class, Topic.PAYMENT_INTERNAL_API),
     ;
 
@@ -31,6 +32,7 @@ public enum EventType {
      */
     public static class Topic {
         public static final String COUPON_ISSUE = "prod.userTeam.user.coupon";
+        public static final String COUPON_DECREASE = "prod.couponTeam.coupon.decrease";
         public static final String PAYMENT_INTERNAL_API = "prod.paymentTeam.paymentInternal";
     }
 }

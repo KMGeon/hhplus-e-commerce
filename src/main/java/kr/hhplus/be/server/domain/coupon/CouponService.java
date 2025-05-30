@@ -2,6 +2,10 @@ package kr.hhplus.be.server.domain.coupon;
 
 import kr.hhplus.be.server.domain.coupon.event.CouponEvent;
 import kr.hhplus.be.server.domain.coupon.event.CouponEventPublisher;
+import kr.hhplus.be.server.domain.support.DistributedLock;
+import kr.hhplus.be.server.domain.support.EventType;
+import kr.hhplus.be.server.domain.support.OutboxEventPublisher;
+import kr.hhplus.be.server.support.CacheKeyManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +19,7 @@ import java.time.LocalDateTime;
 public class CouponService {
 
     private final CouponRepository couponRepository;
-    private final CouponEventPublisher couponEventPublisher;
+    private final OutboxEventPublisher outboxEventPublisher;
 
     @Transactional
     public CouponInfo.CreateInfo save(CouponCommand.Create command) {
@@ -39,7 +43,22 @@ public class CouponService {
         Long couponId = command.couponId();
         Long useId = command.userId();
         couponRepository.issueCoupon(couponId, useId);
-        couponEventPublisher.publishCouponToDecrease(CouponEvent.Inner.CouponDecreaseEvent.from(couponId, useId));
+
+        outboxEventPublisher.publish(
+                EventType.COUPON_ISSUE,
+                CouponEvent.Outer.CouponIssueEventPayload.builder()
+                        .couponId(command.couponId())
+                        .userId(command.userId())
+                        .issueTime(LocalDateTime.now())
+                        .build()
+        );
+        outboxEventPublisher.publish(
+                EventType.COUPON_DECREASE,
+                CouponEvent.Outer.CouponDecreaseEvent.builder()
+                        .couponId(command.couponId())
+                        .build()
+        );
+
         return command.couponId();
     }
 

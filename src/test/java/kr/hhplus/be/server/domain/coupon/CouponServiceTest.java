@@ -2,6 +2,7 @@ package kr.hhplus.be.server.domain.coupon;
 
 import kr.hhplus.be.server.domain.coupon.event.CouponEvent;
 import kr.hhplus.be.server.domain.coupon.event.CouponEventPublisher;
+import kr.hhplus.be.server.domain.support.OutboxEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -23,7 +24,7 @@ class CouponServiceTest {
     private CouponRepository couponRepository;
 
     @Mock
-    private CouponEventPublisher couponEventPublisher;
+    private OutboxEventPublisher outboxEventPublisher;
 
     @InjectMocks
     private CouponService couponService;
@@ -63,14 +64,13 @@ class CouponServiceTest {
                 "테스트 쿠폰", "FIXED_AMOUNT", 100, 5000, LocalDateTime.now()));
 
         when(couponRepository.issueCoupon(any(), any())).thenReturn(couponId);
-        doNothing().when(couponEventPublisher)
-                .publishCouponToDecrease(any(CouponEvent.Inner.CouponDecreaseEvent.class));
+        doNothing().when(outboxEventPublisher).publish(any(), any());
         // when
         couponService.publishCoupon(
                 new CouponCommand.Publish(1L, couponId));
 
         // then
-        verify(couponEventPublisher, times(1)).publishCouponToDecrease(any());
+        verify(outboxEventPublisher, times(2)).publish(any(), any());
         verify(couponRepository, times(1)).issueCoupon(any(), any());
     }
 

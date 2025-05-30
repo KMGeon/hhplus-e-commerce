@@ -105,7 +105,6 @@ public class CouponConcurrencyServiceTest extends ApplicationContext {
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failureCount.incrementAndGet();
-                    // 예외 로그는 예상된 것이므로 출력하지 않음
                 } finally {
                     latch.countDown();
                 }
@@ -149,6 +148,7 @@ public class CouponConcurrencyServiceTest extends ApplicationContext {
                     );
                     successCount.incrementAndGet();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     failureCount.incrementAndGet();
                 } finally {
                     latch.countDown();

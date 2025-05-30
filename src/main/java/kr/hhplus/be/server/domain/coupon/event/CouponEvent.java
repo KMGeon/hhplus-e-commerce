@@ -18,5 +18,8 @@ public class CouponEvent {
         @Builder
         public record CouponIssueEventPayload(Long couponId, Long userId, LocalDateTime issueTime) implements EventPayload {
         }
+
+        @Builder
+        public record CouponDecreaseEvent(Long couponId) implements EventPayload {}
     }
 }
