@@ -6,4 +6,6 @@ public class CouponCommand {
                 return new Create(couponName, discountType, initQuantity, discountAmount);
         }
     }
+
+    public record Publish(Long userId, Long couponId) { }
 }

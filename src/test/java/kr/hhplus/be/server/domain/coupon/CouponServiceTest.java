@@ -1,6 +1,8 @@
 package kr.hhplus.be.server.domain.coupon;
 
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
+import kr.hhplus.be.server.domain.coupon.event.CouponEvent;
+import kr.hhplus.be.server.domain.coupon.event.CouponEventPublisher;
+import kr.hhplus.be.server.domain.support.OutboxEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,6 +22,9 @@ class CouponServiceTest {
 
     @Mock
     private CouponRepository couponRepository;
+
+    @Mock
+    private OutboxEventPublisher outboxEventPublisher;
 
     @InjectMocks
     private CouponService couponService;
@@ -59,11 +64,13 @@ class CouponServiceTest {
                 "테스트 쿠폰", "FIXED_AMOUNT", 100, 5000, LocalDateTime.now()));
 
         when(couponRepository.issueCoupon(any(), any())).thenReturn(couponId);
+        doNothing().when(outboxEventPublisher).publish(any(), any());
         // when
         couponService.publishCoupon(
-                new CouponCriteria.PublishCriteria(1L, couponId));
+                new CouponCommand.Publish(1L, couponId));
 
         // then
+        verify(outboxEventPublisher, times(2)).publish(any(), any());
         verify(couponRepository, times(1)).issueCoupon(any(), any());
     }
 
@@ -84,7 +91,7 @@ class CouponServiceTest {
 
         // when
         // then
-        assertThatThrownBy(() -> couponService.publishCoupon(new CouponCriteria.PublishCriteria(1L, couponId)))
+        assertThatThrownBy(() -> couponService.publishCoupon(new CouponCommand.Publish(1L, couponId)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("쿠폰이 모두 소진되었습니다");
 
@@ -108,7 +115,7 @@ class CouponServiceTest {
 
         // when
         // then
-        assertThatThrownBy(() -> couponService.publishCoupon(new CouponCriteria.PublishCriteria(1L, couponId)))
+        assertThatThrownBy(() -> couponService.publishCoupon(new CouponCommand.Publish(1L, couponId)))
                 .isInstanceOf(RuntimeException.class)
                 .hasMessageContaining("이미 발급한 쿠폰입니다.");
 

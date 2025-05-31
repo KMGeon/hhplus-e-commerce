@@ -30,6 +30,6 @@ public class CouponController implements CouponControllerDocs {
     public ApiResponse<Long> publishCoupon(
             @Valid @RequestBody CouponRequest.Publish publishRequest
     ) {
-        return ApiResponse.success(couponService.publishCoupon(publishRequest.toCriteria()));
+        return ApiResponse.success(couponService.publishCoupon(publishRequest.toCommand()));
     }
 }

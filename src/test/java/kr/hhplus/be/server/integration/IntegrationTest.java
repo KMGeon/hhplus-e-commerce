@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.integration;
 
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
 import kr.hhplus.be.server.application.order.OrderCriteria;
 import kr.hhplus.be.server.application.payment.PaymentCriteria;
 import kr.hhplus.be.server.config.ApplicationContext;
@@ -39,7 +38,7 @@ public class IntegrationTest extends ApplicationContext {
         // 쿠폰을 만든다.
         CouponInfo.CreateInfo getCoupon = couponService.save(new CouponCommand.Create("생일 축하해요 쿠폰", "FIXED_AMOUNT", 10L, 1000L));
         // 유저가 쿠폰을 발급한다
-        couponService.publishCoupon(new CouponCriteria.PublishCriteria(EXIST_USER, getCoupon.couponId()));
+        couponService.publishCoupon(new CouponCommand.Publish(EXIST_USER, getCoupon.couponId()));
 
         // coupon 스케줄러 > 10000
         Thread.sleep(10005L);

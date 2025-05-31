@@ -1,6 +1,5 @@
 package kr.hhplus.be.server.config;
 
-import kr.hhplus.be.server.application.coupon.CouponFacadeService;
 import kr.hhplus.be.server.application.order.OrderFacadeService;
 import kr.hhplus.be.server.application.payment.PaymentFacadeService;
 import kr.hhplus.be.server.domain.coupon.CouponRepository;
@@ -32,8 +31,6 @@ public abstract class ApplicationContext {
     protected UserRepository userRepository;
     @Autowired
     protected UserJpaRepository userJpaRepository;
-    @Autowired
-    protected CouponFacadeService couponFacadeService;
     @Autowired
     protected CouponRepository couponRepository;
     @Autowired
