@@ -1,14 +1,17 @@
 package kr.hhplus.be.server.domain.coupon;
 
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
+import kr.hhplus.be.server.domain.coupon.event.CouponEvent;
+import kr.hhplus.be.server.domain.coupon.event.CouponEventPublisher;
+import kr.hhplus.be.server.domain.support.DistributedLock;
+import kr.hhplus.be.server.domain.support.EventType;
+import kr.hhplus.be.server.domain.support.OutboxEventPublisher;
+import kr.hhplus.be.server.support.CacheKeyManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Service
@@ -16,6 +19,7 @@ import java.util.List;
 public class CouponService {
 
     private final CouponRepository couponRepository;
+    private final OutboxEventPublisher outboxEventPublisher;
 
     @Transactional
     public CouponInfo.CreateInfo save(CouponCommand.Create command) {
@@ -31,30 +35,38 @@ public class CouponService {
         return CouponInfo.CreateInfo.of(saveCoupon.getId());
     }
 
+    /**
+     * @see CouponEventPublisher
+     */
     @Transactional
-    public Long publishCoupon(CouponCriteria.PublishCriteria criteria) {
-        couponRepository.issueCoupon(criteria.couponId(), criteria.userId());
-        couponRepository.enterQueue(criteria.couponId(), criteria.userId());
-        return criteria.couponId();
+    public Long publishCoupon(CouponCommand.Publish command) {
+        Long couponId = command.couponId();
+        Long useId = command.userId();
+        couponRepository.issueCoupon(couponId, useId);
+
+        outboxEventPublisher.publish(
+                EventType.COUPON_ISSUE,
+                CouponEvent.Outer.CouponIssueEventPayload.builder()
+                        .couponId(command.couponId())
+                        .userId(command.userId())
+                        .issueTime(LocalDateTime.now())
+                        .build()
+        );
+        outboxEventPublisher.publish(
+                EventType.COUPON_DECREASE,
+                CouponEvent.Outer.CouponDecreaseEvent.builder()
+                        .couponId(command.couponId())
+                        .build()
+        );
+
+        return command.couponId();
     }
 
-    public List<CouponInfo.CouponAvailable> processBatchInsert() {
-        List<CouponEntity> availableCoupons = couponRepository.findCouponByNotExpired();
-        List<CouponInfo.CouponAvailable> results = new ArrayList<>();
-
-        for (CouponEntity coupon : availableCoupons) {
-            results.add(CouponInfo.CouponAvailable.of(
-                    coupon.getId(),
-                    couponRepository.pullQueueCoupon(coupon.getId(), coupon.getInitQuantity()))
-            );
-        }
-
-        return results;
-    }
-
-    public void decreaseCouponQuantity(Long couponId, int decreaseQuantity) {
-        couponRepository.findCouponById(couponId)
-                .decreaseRemainQuantity(decreaseQuantity);
+    @Transactional
+    public void decreaseCouponQuantity(Long couponId) {
+        CouponEntity coupon = couponRepository.findCouponById(couponId);
+        coupon.decreaseRemainQuantity();
+        couponRepository.save(coupon);
     }
 
     public BigDecimal calculateDiscountAmount(Long couponId, BigDecimal totalPrice) {

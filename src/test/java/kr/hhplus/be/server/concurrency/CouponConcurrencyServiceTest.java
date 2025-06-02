@@ -1,6 +1,6 @@
 package kr.hhplus.be.server.concurrency;
 
-import kr.hhplus.be.server.application.coupon.CouponCriteria;
+
 import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.coupon.CouponCommand;
 import kr.hhplus.be.server.domain.coupon.CouponInfo;
@@ -49,7 +49,7 @@ public class CouponConcurrencyServiceTest extends ApplicationContext {
 
             executorService.submit(() -> {
                 try {
-                    couponService.publishCoupon(new CouponCriteria.PublishCriteria(orderId, getCreateInfo.couponId()));
+                    couponService.publishCoupon(new CouponCommand.Publish(orderId, getCreateInfo.couponId()));
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failureCount.incrementAndGet();
@@ -100,12 +100,11 @@ public class CouponConcurrencyServiceTest extends ApplicationContext {
             executorService.submit(() -> {
                 try {
                     couponService.publishCoupon(
-                            new CouponCriteria.PublishCriteria(userId, getCreateInfo.couponId())
+                            new CouponCommand.Publish(userId, getCreateInfo.couponId())
                     );
                     successCount.incrementAndGet();
                 } catch (Exception e) {
                     failureCount.incrementAndGet();
-                    // 예외 로그는 예상된 것이므로 출력하지 않음
                 } finally {
                     latch.countDown();
                 }
@@ -145,10 +144,11 @@ public class CouponConcurrencyServiceTest extends ApplicationContext {
             executorService.submit(() -> {
                 try {
                     couponService.publishCoupon(
-                            new CouponCriteria.PublishCriteria(userId, getCreateInfo.couponId())
+                            new CouponCommand.Publish(userId, getCreateInfo.couponId())
                     );
                     successCount.incrementAndGet();
                 } catch (Exception e) {
+                    e.printStackTrace();
                     failureCount.incrementAndGet();
                 } finally {
                     latch.countDown();

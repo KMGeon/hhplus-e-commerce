@@ -65,6 +65,10 @@ dependencies {
 	asciidoctorExt("org.springframework.restdocs:spring-restdocs-asciidoctor")
 	testImplementation("org.springframework.restdocs:spring-restdocs-mockmvc")
 
+	//kafka
+	implementation ("org.springframework.kafka:spring-kafka")
+	implementation ("com.fasterxml.jackson.core:jackson-databind")
+
 	// QueryDSL
 	implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
 	annotationProcessor("com.querydsl:querydsl-apt:5.0.0:jakarta")
@@ -84,6 +88,7 @@ dependencies {
 
 
     // Test
+	testImplementation("org.testcontainers:kafka:1.19.3")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
 	testImplementation("org.springframework.boot:spring-boot-testcontainers")
 	testImplementation("org.testcontainers:mysql")

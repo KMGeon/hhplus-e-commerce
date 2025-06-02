@@ -1,6 +1,7 @@
 package kr.hhplus.be.server.domain.payment;
 
 
+import kr.hhplus.be.server.domain.support.OutboxEventPublisher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +23,9 @@ class PaymentServiceTest {
     @Mock
     private PaymentEventPublisher paymentEventPublisher;
 
+    @Mock
+    private OutboxEventPublisher outboxEventPublisher;
+
     @InjectMocks
     private PaymentService paymentService;
 
@@ -34,12 +38,14 @@ class PaymentServiceTest {
 
         PaymentEntity mockPayment = mock(PaymentEntity.class);
         when(paymentRepository.save(any(PaymentEntity.class))).thenReturn(mockPayment);
+        doNothing().when(outboxEventPublisher).publish(any(), any());
 
         // When
         paymentService.paymentProcessByBoolean(orderId, userId, amount, true);
 
         // Then
         verify(paymentRepository).save(any(PaymentEntity.class));
+        verify(outboxEventPublisher, times(1)).publish(any(), any());
         verify(paymentEventPublisher).publishSuccess(any(PaymentEvent.PAYMENT_GATEWAY.class));
     }
     @Test
