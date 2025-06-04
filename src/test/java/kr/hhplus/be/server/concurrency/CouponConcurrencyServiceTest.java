@@ -3,6 +3,7 @@ package kr.hhplus.be.server.concurrency;
 
 import kr.hhplus.be.server.config.ApplicationContext;
 import kr.hhplus.be.server.domain.coupon.CouponCommand;
+import kr.hhplus.be.server.domain.coupon.CouponEntity;
 import kr.hhplus.be.server.domain.coupon.CouponInfo;
 import kr.hhplus.be.server.domain.user.UserEntity;
 import kr.hhplus.be.server.domain.user.userCoupon.UserCouponEntity;
@@ -21,6 +22,49 @@ public class CouponConcurrencyServiceTest extends ApplicationContext {
 
     private static final int THREAD_COUNT = 5;
     private static final int LARGE_THREAD_COUNT = 10;
+
+
+    @Test
+    public void 한2정_5명_제한_쿠폰_동시에_5명_성공적으로_요청() throws Exception {
+        redisTemplateRepository.flushAll();
+
+        userJpaRepository.saveAll(List.of(
+                UserEntity.createNewUser(),
+                UserEntity.createNewUser(),
+                UserEntity.createNewUser(),
+                UserEntity.createNewUser(),
+                UserEntity.createNewUser()
+        ));
+
+        ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+        CountDownLatch latch = new CountDownLatch(THREAD_COUNT);
+
+        CouponInfo.CreateInfo getCreateInfo = couponService.save(new CouponCommand.Create("한정 5개 쿠폰", "FIXED_AMOUNT", 5, 1000L));
+
+        AtomicInteger successCount = new AtomicInteger(0);
+        AtomicInteger failureCount = new AtomicInteger(0);
+
+
+        for (int i = 1; i <= THREAD_COUNT; i++) {
+            final Long orderId = (long) i;
+
+            executorService.submit(() -> {
+                try {
+                    couponService.decreaseCouponQuantity(getCreateInfo.couponId());
+                    successCount.incrementAndGet();
+                } catch (Exception e) {
+                    failureCount.incrementAndGet();
+                    e.printStackTrace();
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await();
+        executorService.shutdown();
+
+        CouponEntity couponById = couponRepository.findCouponById(getCreateInfo.couponId());
+    }
 
 
     @Test

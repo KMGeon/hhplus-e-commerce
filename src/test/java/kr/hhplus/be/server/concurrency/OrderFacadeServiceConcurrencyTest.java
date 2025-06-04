@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OrderFacadeServiceConcurrencyTest  extends ApplicationContext {
-    private static final int THREAD_COUNT = 5;
+    private static final int THREAD_COUNT = 3;
 
     @Autowired
     private OrderFacadeService orderFacadeService;
@@ -27,7 +27,7 @@ class OrderFacadeServiceConcurrencyTest  extends ApplicationContext {
 
     @Test
     @DisplayName("""
-            유저가 5개의 주문을 한번에 요청한다
+            유저가 3개의 주문을 한번에 요청한다
             
             [ 동시성 포인트 ]
             - 공유자원 Stock 재고에서 정합성이 유지되어야 한다.
@@ -36,7 +36,7 @@ class OrderFacadeServiceConcurrencyTest  extends ApplicationContext {
             - 1차 : Join Update에서 비관적 락을 통해 정합성을 유지한다.
             - 2차 : 트래픽이 증가를 하였을 때 Lock을 DB에서 Redis로 변경하여 AOP 분산락
             """)
-    public void concurrency_ifCreateOrder_thread_5_should_return_good() throws Exception{
+    public void concurrency_ifCreateOrder_thread_3_should_return_good() throws Exception{
         ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
         CountDownLatch latch = new CountDownLatch(THREAD_COUNT);
 

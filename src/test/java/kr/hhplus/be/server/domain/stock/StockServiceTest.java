@@ -93,10 +93,9 @@ class StockServiceTest {
         when(stockRepository.updateStockDecreaseFifo(eq(orderId), eq("SKU002"), eq(5L))).thenReturn(5);
 
         // when
-        int result = stockService.decreaseStockLock(orderId, stockCommand);
+        stockService.decreaseStockLock(orderId, stockCommand);
 
         // then
-        assertThat(result).isEqualTo(8); // 3 + 5 = 8 (총 업데이트된 재고 수)
         verify(stockRepository, times(1)).updateStockDecreaseFifo(eq(orderId), eq("SKU001"), eq(3L));
         verify(stockRepository, times(1)).updateStockDecreaseFifo(eq(orderId), eq("SKU002"), eq(5L));
     }

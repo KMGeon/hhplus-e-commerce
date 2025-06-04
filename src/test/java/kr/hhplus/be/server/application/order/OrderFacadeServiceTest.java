@@ -61,11 +61,9 @@ class OrderFacadeServiceTest {
 
         Long orderId = 100L;
         when(orderService.createOrder(eq(userId), any())).thenReturn(orderId);
+        doNothing().when(stockService).decreaseStockLock(anyLong(), any(StockCommand.Order.class));
 
-        int updatedCount = 5; // 2개 + 3개 = 총 5개 업데이트
-        when(stockService.decreaseStockLock(eq(orderId), any(StockCommand.Order.class))).thenReturn(updatedCount);
-
-        Long result = orderFacadeService.createOrder(criteria);
+        orderFacadeService.createOrder(criteria);
 
 
         InOrder inOrder = inOrder(userService, productService, stockService, orderService);

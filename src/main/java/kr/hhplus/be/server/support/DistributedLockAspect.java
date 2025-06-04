@@ -1,64 +1,54 @@
 package kr.hhplus.be.server.support;
 
 import kr.hhplus.be.server.domain.support.DistributedLock;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
-import org.springframework.core.annotation.Order;
-import org.springframework.expression.ExpressionParser;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.lang.reflect.Method;
 
-
+@Slf4j
 @Aspect
 @Component
-@Order(1)
+@RequiredArgsConstructor
 public class DistributedLockAspect {
-    private static final String LOCK_PREFIX = "lock:";
-    private final RedissonClient redissonClient;
-    private final ExpressionParser parser = new SpelExpressionParser();
+    private static final String REDISSON_LOCK_PREFIX = "LOCK:";
 
-    public DistributedLockAspect(RedissonClient redissonClient) {
-        this.redissonClient = redissonClient;
-    }
+    private final RedissonClient redissonClient;
+    private final AopForTransaction aopForTransaction;
 
     @Around("@annotation(distributedLock)")
-    public Object executeWithLock(ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
-        StandardEvaluationContext context = new StandardEvaluationContext();
+    public Object lock(final ProceedingJoinPoint joinPoint, DistributedLock distributedLock) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
-        String[] parameterNames = signature.getParameterNames();
-        Object[] args = joinPoint.getArgs();
+        Method method = signature.getMethod();
 
-        for (int i = 0; i < parameterNames.length; i++) {
-            context.setVariable(parameterNames[i], args[i]);
-        }
+        String key = REDISSON_LOCK_PREFIX + CustomSpringELParser.getDynamicValue(signature.getParameterNames(), joinPoint.getArgs(), distributedLock.key());
+        RLock rLock = redissonClient.getLock(key);  // (1)
 
-        List<String> keys = parser.parseExpression(distributedLock.key()).getValue(context, List.class);
-
-        List<RLock> locks = keys.stream()
-                .map(key -> LOCK_PREFIX + key)
-                .map(redissonClient::getLock)
-                .toList();
-
-        RLock multiLock = redissonClient.getMultiLock(locks.toArray(new RLock[0]));
         try {
-            boolean isLocked = multiLock.tryLock(
-                    distributedLock.waitTime(),
-                    distributedLock.leaseTime(),
-                    distributedLock.timeUnit()
-            );
+            boolean available = rLock.tryLock(distributedLock.waitTime(), distributedLock.leaseTime(), distributedLock.timeUnit());  // (2)
+            if (!available) {
+                return false;
+            }
 
-            if (!isLocked) throw new RuntimeException("LOCK_ACQUISITION_FAILED");
-
-            return joinPoint.proceed();
+            return aopForTransaction.proceed(joinPoint);  // (3)
+        } catch (InterruptedException e) {
+            throw new InterruptedException();
         } finally {
-            multiLock.unlock();
+            try {
+                rLock.unlock();   // (4)
+            } catch (IllegalMonitorStateException e) {
+                log.info("Redisson Lock Already UnLock {} {}",
+                        String.format("serviceName", method.getName()),
+                        String.format("key", key)
+                );
+            }
         }
     }
 }

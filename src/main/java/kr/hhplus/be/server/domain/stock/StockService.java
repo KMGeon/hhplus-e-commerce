@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static kr.hhplus.be.server.support.CacheKeyManager.RedisLockKey.DECREASE_STOCK_ORDER_LOCK;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -33,17 +35,15 @@ public class StockService {
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @DistributedLock(key = CacheKeyManager.RedisLockKey.DECREASE_STOCK_ORDER_LOCK)
-    public int decreaseStockLock(final Long createOrderId, StockCommand.Order stockCommand) {
-        int cnt = 0;
+    @DistributedLock(key = DECREASE_STOCK_ORDER_LOCK)
+    public void decreaseStockLock(final Long createOrderId, StockCommand.Order stockCommand) {
         for (StockCommand.Order.Item item : stockCommand.items()) {
-            cnt += stockRepository.updateStockDecreaseFifo(
+            stockRepository.updateStockDecreaseFifo(
                     createOrderId,
                     item.skuId(),
                     item.ea()
             );
         }
-        return cnt;
     }
 
     public void restoreStock(List<Long> orderId) {
