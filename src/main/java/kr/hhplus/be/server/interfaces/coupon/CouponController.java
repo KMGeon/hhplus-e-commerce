@@ -5,11 +5,13 @@ import kr.hhplus.be.server.domain.coupon.CouponInfo;
 import kr.hhplus.be.server.domain.coupon.CouponService;
 import kr.hhplus.be.server.interfaces.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -30,6 +32,7 @@ public class CouponController implements CouponControllerDocs {
     public ApiResponse<Long> publishCoupon(
             @Valid @RequestBody CouponRequest.Publish publishRequest
     ) {
+        log.info("publish coupon request: {}", publishRequest);
         return ApiResponse.success(couponService.publishCoupon(publishRequest.toCommand()));
     }
 }

@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 public class CouponService {
 
     private final CouponRepository couponRepository;
+    private final CouponEventPublisher couponEventPublisher;
     private final OutboxEventPublisher outboxEventPublisher;
 
     @Transactional
@@ -52,17 +53,13 @@ public class CouponService {
                         .issueTime(LocalDateTime.now())
                         .build()
         );
-        outboxEventPublisher.publish(
-                EventType.COUPON_DECREASE,
-                CouponEvent.Outer.CouponDecreaseEvent.builder()
-                        .couponId(command.couponId())
-                        .build()
-        );
 
+        couponEventPublisher.publishCouponToDecrease(CouponEvent.Inner.CouponDecreaseEvent.from(couponId, command.userId()));
         return command.couponId();
     }
 
     @Transactional
+    @DistributedLock(key = CacheKeyManager.RedisLockKey.test)
     public void decreaseCouponQuantity(Long couponId) {
         CouponEntity coupon = couponRepository.findCouponById(couponId);
         coupon.decreaseRemainQuantity();
