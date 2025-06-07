@@ -17,7 +17,7 @@ export const options = {
             stages: [
                 { duration: '30s', target: 1 },
                 { duration: '5s', target: 100 },
-                { duration: '1m', target: 2000 },
+                { duration: '1m', target: 200 },
                 { duration: '30s', target: 70 },
                 { duration: '1m', target: 25 },
                 { duration: '2m', target: 8 },
@@ -46,7 +46,7 @@ export default function() {
 
     const payload = JSON.stringify({
         userId: userId,
-        couponId: 3
+        couponId: 1
     });
 
     const params = {
@@ -86,3 +86,9 @@ export function teardown() {
     console.log(`전체 요청: ${total}개`);
     console.log(`성공률: ${successPercentage}%`);
 }
+
+/**
+ k6 run \
+ --out influxdb=http://localhost:8086/myk6db \
+ couponPublish_spike.js
+ */
