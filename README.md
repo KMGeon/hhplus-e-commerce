@@ -47,7 +47,6 @@
 ### 인프라 구성
 
 ```mermaid
-```mermaid
 flowchart TB
     client([클라이언트]) --> haproxy
     client --> spring_app
@@ -159,5 +158,4 @@ flowchart TB
     class spring_app app
     class mysql db
     class kafka_ui,redpanda mgmt
-```
 ```
