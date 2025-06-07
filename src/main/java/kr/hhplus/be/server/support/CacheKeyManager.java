@@ -52,6 +52,7 @@ public class CacheKeyManager {
     }
 
     public static class RedisLockKey {
-        public static final String DECREASE_STOCK_ORDER_LOCK = "#stockCommand.items().![skuId()]";
+        public static final String DECREASE_STOCK_ORDER_LOCK = "#stockCommand.generateLockKey()";
+        public static final String test = "#couponId.toString()";
     }
 }

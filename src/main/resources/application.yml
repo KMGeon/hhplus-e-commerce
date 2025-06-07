@@ -6,6 +6,8 @@ spring:
     url: jdbc:mysql://localhost:3306/hhplus?serverTimezone=Asia/Seoul&allowPublicKeyRetrieval=true&useSSL=false
     username: root
     password: root
+    hikari:
+      maximum-pool-size: 30
   sql:
     init:
       mode: always
@@ -15,6 +17,7 @@ spring:
   jpa:
     open-in-view: false
     defer-datasource-initialization: true
+
     database-platform: org.hibernate.dialect.MySQLDialect
     hibernate:
       ddl-auto: create
@@ -29,3 +32,51 @@ spring:
       host: localhost
       port: 9000
       default-expiration: 60
+
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9093,localhost:9094
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      auto-offset-reset: latest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: 1
+
+logging:
+  level:
+    com.zaxxer.hikari.HikariConfig: DEBUG
+    com.zaxxer.hikari: DEBUG
+    com.zaxxer.hikari.pool.HikariPool: DEBUG
+    com.zaxxer.hikari.pool.PoolBase: DEBUG
+
+management:
+  info:
+    java:
+      enabled: true
+    os:
+      enabled: true
+    env:
+      enabled: true
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+info:
+  app:
+    name: hello-actuator
+    company: yh
+
+
+#logging:
+#  level:
+#    org:
+#      springframework:
+#        transaction:
+#          interceptor: TRACE
+

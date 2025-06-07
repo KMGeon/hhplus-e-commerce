@@ -26,6 +26,9 @@ class CouponServiceTest {
     @Mock
     private OutboxEventPublisher outboxEventPublisher;
 
+    @Mock
+    private CouponEventPublisher couponEventPublisher;
+
     @InjectMocks
     private CouponService couponService;
 
@@ -65,12 +68,14 @@ class CouponServiceTest {
 
         when(couponRepository.issueCoupon(any(), any())).thenReturn(couponId);
         doNothing().when(outboxEventPublisher).publish(any(), any());
+        doNothing().when(couponEventPublisher).publishCouponToDecrease(any());
+//        couponEventPublisher
         // when
         couponService.publishCoupon(
                 new CouponCommand.Publish(1L, couponId));
 
         // then
-        verify(outboxEventPublisher, times(2)).publish(any(), any());
+        verify(outboxEventPublisher, times(1)).publish(any(), any());
         verify(couponRepository, times(1)).issueCoupon(any(), any());
     }
 

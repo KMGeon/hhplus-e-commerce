@@ -94,6 +94,10 @@ dependencies {
 	testImplementation("org.testcontainers:mysql")
 	testImplementation("org.testcontainers:junit-jupiter")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+	implementation ("org.springframework.boot:spring-boot-starter-actuator")
+	implementation ("io.micrometer:micrometer-registry-prometheus")
+
 }
 
 tasks.withType<Test> {
