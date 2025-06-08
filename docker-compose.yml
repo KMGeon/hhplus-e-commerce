@@ -81,7 +81,7 @@ services:
       - "9000:9000"
       - "5001:5001"
     volumes:
-      - ./data/redis/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
+      - ./conf/haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg
     networks:
       - redis_network
 networks:
