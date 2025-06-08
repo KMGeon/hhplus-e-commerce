@@ -29,6 +29,15 @@ public class PaymentFacadeService {
     private final StockService stockService;
 
 
+    /**
+     * todo : 2025 - 06 -08
+     * 1. 결제와 재고를 MSA에서 도메인을 어떻게 분리를 처리할까?
+     * 2. 각 도메인 마다 Application Event, Kafka 이벤트 분리하기
+     * 3. Kafka 이벤트를 zero-payload / full-payload 결정하기 ( 학습 포인트 )
+     * 4. 이벤트 분리를 시키고 각 상황에 맞는 보상 트랜잭션 (Saga Pattern) 을 어떻게 처리할지 고민하기
+     * 5. 결제의 경우에는 아마도 트래픽이 적을테니 정합성을 check 100% 보장하게
+     * 6. 서킷 브레이커 ?? 이놈이 먼지 한번 알아보자
+     */
     @Transactional
     public void payment(PaymentCriteria.Pay criteria) {
         long orderId = criteria.orderId();
