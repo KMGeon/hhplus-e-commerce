@@ -59,7 +59,7 @@ public class CouponService {
     }
 
     @Transactional
-    @DistributedLock(key = CacheKeyManager.RedisLockKey.test)
+    @DistributedLock(key = CacheKeyManager.RedisLockKey.DECREASE_COUPON_LOCK)
     public void decreaseCouponQuantity(Long couponId) {
         CouponEntity coupon = couponRepository.findCouponById(couponId);
         coupon.decreaseRemainQuantity();
